@@ -116,6 +116,14 @@ class APHA_Settings_Page extends WC_Settings_Page {
 			),
 
 			array(
+				'title'   => __( 'Form Identification', 'advanced-posthog-analytics' ),
+				'desc'    => __( 'Identify visitors when they enter an email address in any form (checkout, contact, signup).', 'advanced-posthog-analytics' ),
+				'id'      => 'apha_form_identify',
+				'type'    => 'checkbox',
+				'default' => 'yes',
+			),
+
+			array(
 				'type' => 'sectionend',
 				'id'   => 'apha_tracking_options',
 			),

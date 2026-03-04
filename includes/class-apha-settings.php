@@ -110,4 +110,13 @@ class APHA_Settings {
 	public static function is_consent_mode_enabled() {
 		return get_option( 'apha_consent_mode', 'no' ) === 'yes';
 	}
+
+	/**
+	 * Check whether client-side form identification is enabled.
+	 *
+	 * @return bool
+	 */
+	public static function is_form_identify_enabled() {
+		return get_option( 'apha_form_identify', 'yes' ) === 'yes';
+	}
 }

@@ -57,6 +57,200 @@
 	}
 
 	/**
+	 * Validate an email address.
+	 *
+	 * @param {string} value Raw input value.
+	 * @return {boolean} True if the value looks like a valid email.
+	 */
+	function isValidEmail(value) {
+		return /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(value.trim());
+	}
+
+	/**
+	 * Create a debounced version of a function.
+	 *
+	 * @param {Function} fn    The function to debounce.
+	 * @param {number}   delay Delay in milliseconds.
+	 * @return {Function} Debounced function.
+	 */
+	function debounce(fn, delay) {
+		var timer;
+		return function () {
+			var args = arguments;
+			clearTimeout(timer);
+			timer = setTimeout(function () {
+				fn.apply(null, args);
+			}, delay);
+		};
+	}
+
+	/**
+	 * Perform a PostHog identify or setPersonProperties call.
+	 *
+	 * @param {string} email Validated email address.
+	 * @param {string} name  Full name (may be empty string).
+	 */
+	function identifyFromForm(email, name) {
+		if (!window.posthog) {
+			return;
+		}
+
+		var props = {email: email};
+		if (name) {
+			props.name = name;
+		}
+
+		if (window.aphaConfig && window.aphaConfig.personProfiles === 'identified_only') {
+			window.posthog.identify(email, props);
+		} else {
+			window.posthog.setPersonProperties(props);
+		}
+	}
+
+	/**
+	 * Attempt to read a full name from fields near the given email input.
+	 *
+	 * @param {Element} emailInput The email input element.
+	 * @return {string} Full name trimmed, or empty string.
+	 */
+	function getNameFromContext(emailInput) {
+		var form = emailInput.form || emailInput.closest('form');
+
+		// WooCommerce classic checkout.
+		var firstName = document.getElementById('billing_first_name');
+		var lastName = document.getElementById('billing_last_name');
+		if (firstName || lastName) {
+			return ((firstName ? firstName.value : '') + ' ' + (lastName ? lastName.value : '')).trim();
+		}
+
+		// WooCommerce block checkout.
+		var blockCheckout = document.querySelector('.wc-block-checkout');
+		if (blockCheckout) {
+			var givenName = blockCheckout.querySelector('input[autocomplete="given-name"]');
+			var familyName = blockCheckout.querySelector('input[autocomplete="family-name"]');
+			if (givenName || familyName) {
+				return ((givenName ? givenName.value : '') + ' ' + (familyName ? familyName.value : '')).trim();
+			}
+		}
+
+		// Generic form: look for name inputs within the same form.
+		if (form) {
+			var inputs = form.querySelectorAll('input[type="text"]');
+			var nameParts = [];
+			for (var i = 0; i < inputs.length; i++) {
+				var el = inputs[i];
+				var attr = (el.name || '').toLowerCase() + (el.id || '').toLowerCase() + (el.autocomplete || '').toLowerCase();
+				if (el !== emailInput && /\bname\b|first.name|last.name|given.name|family.name/.test(attr)) {
+					if (el.value.trim()) {
+						nameParts.push(el.value.trim());
+					}
+				}
+			}
+			return nameParts.join(' ').trim();
+		}
+
+		return '';
+	}
+
+	/**
+	 * Initialize client-side form identification.
+	 */
+	function initFormIdentify() {
+		if (!window.aphaConfig || window.aphaConfig.formIdentify !== '1') {
+			return;
+		}
+
+		if (!window.posthog) {
+			return;
+		}
+
+		// Respect consent mode.
+		if (typeof window.posthog.has_opted_out_capturing === 'function' &&
+			window.posthog.has_opted_out_capturing()) {
+			return;
+		}
+
+		var identified = false;
+
+		/**
+		 * Factory returning a debounced blur handler for an email input.
+		 *
+		 * @param {Element} emailInput The email input element.
+		 * @return {Function} Debounced handler.
+		 */
+		var makeHandler = function (emailInput) {
+			return debounce(function () {
+				if (identified) {
+					return;
+				}
+
+				// Re-check consent at call time.
+				if (typeof window.posthog.has_opted_out_capturing === 'function' &&
+					window.posthog.has_opted_out_capturing()) {
+					return;
+				}
+
+				var email = emailInput.value.trim();
+				if (!isValidEmail(email)) {
+					return;
+				}
+
+				var name = getNameFromContext(emailInput);
+				identifyFromForm(email, name);
+				identified = true;
+			}, 400);
+		};
+
+		// WooCommerce classic checkout.
+		var classicEmail = document.getElementById('billing_email');
+		if (classicEmail && !classicEmail.dataset.aphaWatched) {
+			classicEmail.dataset.aphaWatched = '1';
+			classicEmail.addEventListener('blur', makeHandler(classicEmail));
+		}
+
+		// WooCommerce block checkout (async DOM).
+		var blockContainer = document.querySelector('.wc-block-checkout');
+		if (blockContainer) {
+			var observer = new MutationObserver(function () {
+				var emailInput = blockContainer.querySelector('input[autocomplete="email"], input[type="email"]');
+				if (emailInput && !emailInput.dataset.aphaWatched) {
+					emailInput.dataset.aphaWatched = '1';
+					emailInput.addEventListener('blur', makeHandler(emailInput));
+					observer.disconnect();
+				}
+			});
+			observer.observe(blockContainer, {childList: true, subtree: true});
+		}
+
+		// Generic forms: capture-phase delegation (blur doesn't bubble).
+		document.addEventListener('blur', function (e) {
+			var target = e.target;
+			if (target.tagName !== 'INPUT' || target.dataset.aphaWatched) {
+				return;
+			}
+
+			var isEmail = target.type === 'email' ||
+				/email/i.test(target.name || '') ||
+				/email/i.test(target.id || '') ||
+				/email/i.test(target.autocomplete || '');
+
+			if (!isEmail) {
+				return;
+			}
+
+			target.dataset.aphaWatched = '1';
+			var handler = makeHandler(target);
+			target.addEventListener('blur', handler);
+
+			// Fire immediately since this blur already occurred.
+			handler();
+		}, true);
+	}
+
+	// Expose for consent re-entry via aphaOptIn().
+	window.aphaInitFormIdentify = initFormIdentify;
+
+	/**
 	 * Build a human-readable variant label from a variation's attributes.
 	 *
 	 * @param {Object} attributes Variation attributes (e.g. {attribute_pa_color: "blue"}).
@@ -390,6 +584,9 @@
 				});
 			}
 		}
+
+		// --- Form Identification ---
+		initFormIdentify();
 	}
 
 	/**

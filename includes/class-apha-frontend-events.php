@@ -55,8 +55,10 @@ class APHA_Frontend_Events {
 			'apha-tracker',
 			'aphaConfig',
 			array(
-				'cartUrl' => wc_get_cart_url(),
-				'ajaxUrl' => admin_url( 'admin-ajax.php' ),
+				'cartUrl'        => wc_get_cart_url(),
+				'ajaxUrl'        => admin_url( 'admin-ajax.php' ),
+				'personProfiles' => APHA_Settings::get_person_profiles(),
+				'formIdentify'   => APHA_Settings::is_form_identify_enabled() ? '1' : '0',
 			)
 		);
 	}
@@ -129,6 +131,9 @@ class APHA_Frontend_Events {
 				if (window.posthog) {
 					posthog.opt_in_capturing();
 					posthog.set_config({persistence: 'localStorage+cookie'});
+					if (typeof window.aphaInitFormIdentify === 'function') {
+						window.aphaInitFormIdentify();
+					}
 				}
 			};
 			window.aphaOptOut = function() {

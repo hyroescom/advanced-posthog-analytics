@@ -4,7 +4,7 @@ Tags: posthog, woocommerce, analytics, attribution, ecommerce
 Requires at least: 5.8
 Tested up to: 6.9
 Requires PHP: 7.4
-Stable tag: 1.1.0
+Stable tag: 1.2.0
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -117,6 +117,14 @@ Yes. Both classic (shortcode) and block-based checkout flows are fully supported
 
 == Changelog ==
 
+= 1.2.0 =
+* New: Form identification — identifies anonymous visitors in PostHog when they enter an email in any form (checkout, contact, signup)
+* New: Supports WooCommerce classic checkout, block checkout, and generic forms (Elementor, CF7, WPForms, plain HTML)
+* New: Auto-detects email and name fields on blur — captures even abandoned forms
+* New: "Form Identification" toggle in WooCommerce > Settings > PostHog Analytics
+* New: Respects person_profiles mode — uses setPersonProperties (always) or identify (identified_only)
+* New: Consent-aware — re-initializes after opt-in when consent mode is active
+
 = 1.1.0 =
 * New: Marketing attribution engine with first-touch/last-touch UTM tracking
 * New: Ad click ID capture (Google, Meta, TikTok, Microsoft, LinkedIn)
@@ -150,6 +158,9 @@ Yes. Both classic (shortcode) and block-based checkout flows are fully supported
 * Identity management with cookie-based distinct IDs
 
 == Upgrade Notice ==
+
+= 1.2.0 =
+New form identification feature links anonymous visitors to PostHog profiles when they enter their email in any form. Works with all form builders and WooCommerce checkout flows.
 
 = 1.1.0 =
 Major update: marketing attribution engine, identity stitching fix for PostHog funnels, LTV enrichment, and consent management. Recommended for all users.
