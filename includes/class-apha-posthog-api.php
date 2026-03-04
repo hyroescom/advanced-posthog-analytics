@@ -1,22 +1,22 @@
 <?php
 /**
- * WooHog PostHog API Client.
+ * Advanced PostHog Analytics PostHog API Client.
  *
  * Handles all HTTP communication with the PostHog capture API
  * using the WordPress HTTP API (wp_remote_post).
  *
- * @package WooHog
+ * @package AdvancedPostHogAnalytics
  */
 
 defined( 'ABSPATH' ) || exit;
 
 /**
- * Class WooHog_PostHog_API
+ * Class APHA_PostHog_API
  *
  * Provides methods to send events, identify users, merge identities,
  * and batch multiple events via the PostHog HTTP API.
  */
-class WooHog_PostHog_API {
+class APHA_PostHog_API {
 
 	/**
 	 * PostHog project API key.
@@ -35,11 +35,11 @@ class WooHog_PostHog_API {
 	/**
 	 * Constructor.
 	 *
-	 * Reads configuration from WooHog_Settings static helpers.
+	 * Reads configuration from APHA_Settings static helpers.
 	 */
 	public function __construct() {
-		$this->api_key = WooHog_Settings::get_api_key();
-		$this->host    = WooHog_Settings::get_posthog_host();
+		$this->api_key = APHA_Settings::get_api_key();
+		$this->host    = APHA_Settings::get_posthog_host();
 	}
 
 	/**
@@ -79,8 +79,8 @@ class WooHog_PostHog_API {
 			$properties,
 			array(
 				'distinct_id'  => $distinct_id,
-				'$lib'         => 'woohog',
-				'$lib_version' => WOOHOG_VERSION,
+				'$lib'         => 'advanced-posthog-analytics',
+				'$lib_version' => APHA_VERSION,
 			)
 		);
 
@@ -172,8 +172,8 @@ class WooHog_PostHog_API {
 				$properties,
 				array(
 					'distinct_id'  => $event['distinct_id'],
-					'$lib'         => 'woohog',
-					'$lib_version' => WOOHOG_VERSION,
+					'$lib'         => 'advanced-posthog-analytics',
+					'$lib_version' => APHA_VERSION,
 				)
 			);
 
@@ -216,7 +216,7 @@ class WooHog_PostHog_API {
 		);
 
 		if ( is_wp_error( $response ) ) {
-			error_log( 'WooHog: PostHog API error - ' . $response->get_error_message() );
+			error_log( 'APHA: PostHog API error - ' . $response->get_error_message() );
 			return false;
 		}
 
@@ -226,7 +226,7 @@ class WooHog_PostHog_API {
 			if ( 200 !== $response_code ) {
 				error_log(
 					sprintf(
-						'WooHog: PostHog API returned HTTP %d.',
+						'APHA: PostHog API returned HTTP %d.',
 						$response_code
 					)
 				);

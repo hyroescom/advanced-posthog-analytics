@@ -1,50 +1,50 @@
 <?php
 /**
- * WooHog Identity Management.
+ * Advanced PostHog Analytics Identity Management.
  *
  * Manages user identity resolution, cookie-based distinct IDs,
  * and PostHog identify calls for anonymous-to-known user linking.
  *
- * @package WooHog
+ * @package AdvancedPostHogAnalytics
  */
 
 defined( 'ABSPATH' ) || exit;
 
 /**
- * Class WooHog_Identity
+ * Class APHA_Identity
  *
  * Handles distinct ID generation, cookie management, and identity
  * merging between anonymous visitors and logged-in WordPress users.
  */
-class WooHog_Identity {
+class APHA_Identity {
 
 	/**
 	 * Cookie name for storing the PostHog distinct ID.
 	 *
 	 * @var string
 	 */
-	const WOOHOG_DISTINCT_ID_COOKIE = 'woohog_distinct_id';
+	const APHA_DISTINCT_ID_COOKIE = 'apha_distinct_id';
 
 	/**
 	 * PostHog API instance.
 	 *
-	 * @var WooHog_PostHog_API
+	 * @var APHA_PostHog_API
 	 */
 	private $api;
 
 	/**
 	 * Attribution engine instance (optional).
 	 *
-	 * @var WooHog_Attribution|null
+	 * @var APHA_Attribution|null
 	 */
 	private $attribution = null;
 
 	/**
 	 * Constructor.
 	 *
-	 * @param WooHog_PostHog_API $api PostHog API instance.
+	 * @param APHA_PostHog_API $api PostHog API instance.
 	 */
-	public function __construct( WooHog_PostHog_API $api ) {
+	public function __construct( APHA_PostHog_API $api ) {
 		$this->api = $api;
 
 		add_action( 'init', array( $this, 'ensure_distinct_id' ) );
@@ -56,10 +56,10 @@ class WooHog_Identity {
 	/**
 	 * Set the attribution engine instance.
 	 *
-	 * @param WooHog_Attribution $attribution Attribution engine.
+	 * @param APHA_Attribution $attribution Attribution engine.
 	 * @return void
 	 */
-	public function set_attribution( WooHog_Attribution $attribution ) {
+	public function set_attribution( APHA_Attribution $attribution ) {
 		$this->attribution = $attribution;
 	}
 
@@ -73,7 +73,7 @@ class WooHog_Identity {
 			return;
 		}
 
-		if ( isset( $_COOKIE[ self::WOOHOG_DISTINCT_ID_COOKIE ] ) && ! empty( $_COOKIE[ self::WOOHOG_DISTINCT_ID_COOKIE ] ) ) {
+		if ( isset( $_COOKIE[ self::APHA_DISTINCT_ID_COOKIE ] ) && ! empty( $_COOKIE[ self::APHA_DISTINCT_ID_COOKIE ] ) ) {
 			return;
 		}
 
@@ -94,7 +94,7 @@ class WooHog_Identity {
 	 *
 	 * For anonymous visitors, prefers the PostHog JS SDK's own distinct_id
 	 * read from its cookie so server events match the browser session.
-	 * Falls back to the WooHog cookie if PostHog's cookie is unavailable.
+	 * Falls back to the Advanced PostHog Analytics cookie if PostHog's cookie is unavailable.
 	 *
 	 * @return string|null Distinct ID or null if unavailable.
 	 */
@@ -111,8 +111,8 @@ class WooHog_Identity {
 			return $posthog_id;
 		}
 
-		if ( isset( $_COOKIE[ self::WOOHOG_DISTINCT_ID_COOKIE ] ) && ! empty( $_COOKIE[ self::WOOHOG_DISTINCT_ID_COOKIE ] ) ) {
-			return sanitize_text_field( wp_unslash( $_COOKIE[ self::WOOHOG_DISTINCT_ID_COOKIE ] ) );
+		if ( isset( $_COOKIE[ self::APHA_DISTINCT_ID_COOKIE ] ) && ! empty( $_COOKIE[ self::APHA_DISTINCT_ID_COOKIE ] ) ) {
+			return sanitize_text_field( wp_unslash( $_COOKIE[ self::APHA_DISTINCT_ID_COOKIE ] ) );
 		}
 
 		return null;
@@ -129,7 +129,7 @@ class WooHog_Identity {
 	 * @return string|null The browser distinct_id or null if unavailable.
 	 */
 	private function get_posthog_browser_distinct_id() {
-		$api_key = WooHog_Settings::get_api_key();
+		$api_key = APHA_Settings::get_api_key();
 
 		if ( empty( $api_key ) ) {
 			return null;
@@ -164,7 +164,7 @@ class WooHog_Identity {
 	 * @return string Distinct ID for the order.
 	 */
 	public function get_distinct_id_for_order( $order ) {
-		$meta_distinct_id = $order->get_meta( '_woohog_distinct_id' );
+		$meta_distinct_id = $order->get_meta( '_apha_distinct_id' );
 
 		if ( ! empty( $meta_distinct_id ) ) {
 			return $meta_distinct_id;
@@ -178,7 +178,7 @@ class WooHog_Identity {
 
 		// Last resort: generate a new UUID so the event still has an identity.
 		$fallback_id = wp_generate_uuid4();
-		$order->update_meta_data( '_woohog_distinct_id', $fallback_id );
+		$order->update_meta_data( '_apha_distinct_id', $fallback_id );
 		$order->save();
 
 		return $fallback_id;
@@ -208,8 +208,8 @@ class WooHog_Identity {
 		$anon_id = $this->get_posthog_browser_distinct_id();
 
 		if ( empty( $anon_id ) ) {
-			$anon_id = isset( $_COOKIE[ self::WOOHOG_DISTINCT_ID_COOKIE ] )
-				? sanitize_text_field( wp_unslash( $_COOKIE[ self::WOOHOG_DISTINCT_ID_COOKIE ] ) )
+			$anon_id = isset( $_COOKIE[ self::APHA_DISTINCT_ID_COOKIE ] )
+				? sanitize_text_field( wp_unslash( $_COOKIE[ self::APHA_DISTINCT_ID_COOKIE ] ) )
 				: null;
 		}
 
@@ -237,7 +237,7 @@ class WooHog_Identity {
 			return;
 		}
 
-		$order->update_meta_data( '_woohog_distinct_id', $distinct_id );
+		$order->update_meta_data( '_apha_distinct_id', $distinct_id );
 		$order->save();
 	}
 
@@ -322,10 +322,10 @@ class WooHog_Identity {
 		$expiry = time() + YEAR_IN_SECONDS;
 
 		if ( function_exists( 'wc_setcookie' ) ) {
-			wc_setcookie( self::WOOHOG_DISTINCT_ID_COOKIE, $distinct_id, $expiry, false );
+			wc_setcookie( self::APHA_DISTINCT_ID_COOKIE, $distinct_id, $expiry, false );
 		} else {
 			setcookie(
-				self::WOOHOG_DISTINCT_ID_COOKIE,
+				self::APHA_DISTINCT_ID_COOKIE,
 				$distinct_id,
 				array(
 					'expires'  => $expiry,
@@ -338,6 +338,6 @@ class WooHog_Identity {
 		}
 
 		// Make the cookie available in the current request.
-		$_COOKIE[ self::WOOHOG_DISTINCT_ID_COOKIE ] = $distinct_id;
+		$_COOKIE[ self::APHA_DISTINCT_ID_COOKIE ] = $distinct_id;
 	}
 }

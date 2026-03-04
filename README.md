@@ -1,4 +1,4 @@
-# WooHog
+# Advanced PostHog Analytics
 
 **PostHog Analytics for WooCommerce** — server-side event tracking, marketing attribution engine, identity stitching, and LTV enrichment.
 
@@ -6,9 +6,9 @@ A free, open-source alternative to HYROS for WooCommerce stores.
 
 ---
 
-## What WooHog Does
+## What Advanced PostHog Analytics Does
 
-WooHog connects your WooCommerce store to [PostHog](https://posthog.com) and tracks the complete customer journey — from the first ad click to lifetime value.
+Advanced PostHog Analytics connects your WooCommerce store to [PostHog](https://posthog.com) and tracks the complete customer journey — from the first ad click to lifetime value.
 
 | Capability | What You Get |
 |---|---|
@@ -23,7 +23,7 @@ WooHog connects your WooCommerce store to [PostHog](https://posthog.com) and tra
 
 ## Why Not Just Use HYROS?
 
-| | HYROS | WooHog |
+| | HYROS | Advanced PostHog Analytics |
 |---|---|---|
 | **Cost** | $300–800/mo | Free |
 | **Data ownership** | Their servers | Your PostHog instance |
@@ -42,10 +42,10 @@ WooHog connects your WooCommerce store to [PostHog](https://posthog.com) and tra
 
 ### From GitHub
 
-1. Download the [latest release](https://github.com/hyroescom/woohog/releases)
+1. Download the [latest release](https://github.com/hyroescom/advanced-posthog-analytics/releases)
 2. Upload the zip via **Plugins > Add New > Upload Plugin** in WordPress
-3. Activate WooHog
-4. Go to **WooCommerce > Settings > WooHog**
+3. Activate Advanced PostHog Analytics
+4. Go to **WooCommerce > Settings > Advanced PostHog Analytics**
 5. Enter your PostHog API key (`phc_...`)
 6. Select your region (US or EU)
 7. Done — events start flowing immediately
@@ -54,7 +54,7 @@ WooHog connects your WooCommerce store to [PostHog](https://posthog.com) and tra
 
 ```bash
 cd wp-content/plugins/
-git clone https://github.com/hyroescom/woohog.git
+git clone https://github.com/hyroescom/advanced-posthog-analytics.git
 ```
 
 Activate in WordPress admin.
@@ -63,7 +63,7 @@ Activate in WordPress admin.
 
 ## Configuration
 
-All settings are in **WooCommerce > Settings > WooHog**.
+All settings are in **WooCommerce > Settings > Advanced PostHog Analytics**.
 
 | Setting | Description | Default |
 |---|---|---|
@@ -107,7 +107,7 @@ All settings are in **WooCommerce > Settings > WooHog**.
 
 ## Attribution Engine
 
-WooHog captures marketing attribution data on every visit and persists it to orders:
+Advanced PostHog Analytics captures marketing attribution data on every visit and persists it to orders:
 
 ### What Gets Captured
 
@@ -123,9 +123,9 @@ Visit with ?utm_source=google&gclid=abc123
     ↓
 Server-side PHP setcookie() — bypasses Safari ITP
     ↓
-woohog_ft (first-touch, 365 days) — set once, never overwritten
-woohog_lt (last-touch, 30 days) — overwritten each attributed visit
-woohog_cid (click IDs, 90 days) — latest click IDs
+advanced-posthog-analytics_ft (first-touch, 365 days) — set once, never overwritten
+advanced-posthog-analytics_lt (last-touch, 30 days) — overwritten each attributed visit
+advanced-posthog-analytics_cid (click IDs, 90 days) — latest click IDs
     ↓
 At checkout: cookies → order meta → PostHog event properties
     ↓
@@ -139,11 +139,11 @@ Order Completed event includes:
 
 ### Safari ITP Bypass
 
-JavaScript-set cookies with tracking parameters (like `fbclid`) are capped at **24 hours** by Safari's Intelligent Tracking Prevention. WooHog uses PHP `setcookie()` — these are server-set first-party cookies and persist for the full configured duration (up to 1 year).
+JavaScript-set cookies with tracking parameters (like `fbclid`) are capped at **24 hours** by Safari's Intelligent Tracking Prevention. Advanced PostHog Analytics uses PHP `setcookie()` — these are server-set first-party cookies and persist for the full configured duration (up to 1 year).
 
 ### WooCommerce Native Fallback
 
-When WooHog's cookies are unavailable (blocked, expired), the plugin reads WooCommerce 8.5+'s built-in `_wc_order_attribution_*` meta as a fallback.
+When Advanced PostHog Analytics's cookies are unavailable (blocked, expired), the plugin reads WooCommerce 8.5+'s built-in `_wc_order_attribution_*` meta as a fallback.
 
 ---
 
@@ -151,7 +151,7 @@ When WooHog's cookies are unavailable (blocked, expired), the plugin reads WooCo
 
 The #1 issue with WooCommerce + PostHog setups: browser events and server events use different identities, breaking funnels.
 
-WooHog solves this:
+Advanced PostHog Analytics solves this:
 
 | Scenario | Browser Events | Server Events | Connected? |
 |---|---|---|---|
@@ -163,7 +163,7 @@ WooHog solves this:
 
 ## Person Profile Enrichment
 
-After every order, WooHog updates the PostHog person profile:
+After every order, Advanced PostHog Analytics updates the PostHog person profile:
 
 **`$set` (always updated):**
 - `email`, `name`, `phone`, `city`, `state`, `country`
@@ -204,8 +204,8 @@ Build powerful PostHog cohorts like:
 
 | Filter | Description | Default |
 |---|---|---|
-| `woohog_data_layer` | Modify the frontend data layer before output | — |
-| `woohog_max_products_in_data_layer` | Cap products in data layer on list pages | `48` |
+| `advanced-posthog-analytics_data_layer` | Modify the frontend data layer before output | — |
+| `advanced-posthog-analytics_max_products_in_data_layer` | Cap products in data layer on list pages | `48` |
 
 ---
 
@@ -224,4 +224,4 @@ GPL-2.0-or-later. See [LICENSE](LICENSE) for details.
 
 ---
 
-Built by [AG Studios](https://github.com/hyroescom)
+Built by [AGStudio.ai](https://agstudio.ai)

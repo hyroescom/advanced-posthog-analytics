@@ -1,36 +1,36 @@
 <?php
 /**
- * WooHog Data Layer.
+ * Advanced PostHog Analytics Data Layer.
  *
  * Outputs a JavaScript data layer object in the footer containing
  * structured e-commerce data for the current page context.
  *
- * @package WooHog
+ * @package AdvancedPostHogAnalytics
  */
 
 defined( 'ABSPATH' ) || exit;
 
 /**
- * Class WooHog_Data_Layer
+ * Class APHA_Data_Layer
  *
- * Injects `window.woohogDataLayer` with page-specific product and
+ * Injects `window.aphaDataLayer` with page-specific product and
  * cart data so the frontend tracker script can capture events.
  */
-class WooHog_Data_Layer {
+class APHA_Data_Layer {
 
 	/**
 	 * Product data helper.
 	 *
-	 * @var WooHog_Product_Data
+	 * @var APHA_Product_Data
 	 */
 	private $product_data;
 
 	/**
 	 * Constructor.
 	 *
-	 * @param WooHog_Product_Data $product_data Product data helper instance.
+	 * @param APHA_Product_Data $product_data Product data helper instance.
 	 */
-	public function __construct( WooHog_Product_Data $product_data ) {
+	public function __construct( APHA_Product_Data $product_data ) {
 		$this->product_data = $product_data;
 
 		add_action( 'wp_footer', array( $this, 'output_data_layer' ), 5 );
@@ -40,7 +40,7 @@ class WooHog_Data_Layer {
 	 * Output the data layer script tag in the footer.
 	 *
 	 * Builds a structured data array based on the current page context
-	 * and outputs it as a JSON object assigned to `window.woohogDataLayer`.
+	 * and outputs it as a JSON object assigned to `window.aphaDataLayer`.
 	 *
 	 * @return void
 	 */
@@ -80,9 +80,9 @@ class WooHog_Data_Layer {
 		 *
 		 * @param array $data The data layer array.
 		 */
-		$data = apply_filters( 'woohog_data_layer', $data );
+		$data = apply_filters( 'apha_data_layer', $data );
 
-		echo '<script>window.woohogDataLayer = ' . wp_json_encode( $data ) . ';</script>' . "\n";
+		echo '<script>window.aphaDataLayer = ' . wp_json_encode( $data ) . ';</script>' . "\n";
 	}
 
 	/**
@@ -224,7 +224,7 @@ class WooHog_Data_Layer {
 		 *
 		 * @param int $max Max products. Default 48.
 		 */
-		$max_products = apply_filters( 'woohog_max_products_in_data_layer', 48 );
+		$max_products = apply_filters( 'apha_max_products_in_data_layer', 48 );
 
 		if ( ! empty( $wp_query->posts ) ) {
 			$count = 0;

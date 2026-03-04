@@ -1,11 +1,11 @@
 /**
- * WooHog Frontend Event Tracker.
+ * Advanced PostHog Analytics Frontend Event Tracker.
  *
  * Captures e-commerce events (Product Viewed, Cart Viewed, Checkout Started,
  * Product Clicked, Coupon Applied/Removed, etc.) and sends them to PostHog
  * via the JS SDK.
  *
- * @package WooHog
+ * @package AdvancedPostHogAnalytics
  */
 (function () {
 	'use strict';
@@ -116,7 +116,7 @@
 	/**
 	 * Initialize event tracking once dependencies are available.
 	 *
-	 * @param {Object} dataLayer The woohogDataLayer object.
+	 * @param {Object} dataLayer The aphaDataLayer object.
 	 */
 	function initTracking(dataLayer) {
 		var pageType = dataLayer.page_type;
@@ -401,9 +401,9 @@
 		var interval = setInterval(function () {
 			attempts++;
 
-			if (window.woohogDataLayer && window.posthog) {
+			if (window.aphaDataLayer && window.posthog) {
 				clearInterval(interval);
-				initTracking(window.woohogDataLayer);
+				initTracking(window.aphaDataLayer);
 				return;
 			}
 
@@ -414,8 +414,8 @@
 	}
 
 	// Start polling for dependencies.
-	if (window.woohogDataLayer && window.posthog) {
-		initTracking(window.woohogDataLayer);
+	if (window.aphaDataLayer && window.posthog) {
+		initTracking(window.aphaDataLayer);
 	} else {
 		waitForDependencies();
 	}

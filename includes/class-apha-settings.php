@@ -1,6 +1,6 @@
 <?php
 /**
- * WooHog Settings Helpers.
+ * Advanced PostHog Analytics Settings Helpers.
  *
  * Provides static accessor methods for plugin options. This class
  * does NOT extend WC_Settings_Page so it can be safely loaded on
@@ -8,19 +8,19 @@
  * WooCommerce admin classes to be available.
  *
  * The actual WC_Settings_Page tab is registered lazily via the
- * `woocommerce_get_settings_pages` filter in WooHog::add_settings_page().
+ * `woocommerce_get_settings_pages` filter in APHA::add_settings_page().
  *
- * @package WooHog
+ * @package AdvancedPostHogAnalytics
  */
 
 defined( 'ABSPATH' ) || exit;
 
 /**
- * Class WooHog_Settings
+ * Class APHA_Settings
  *
- * Lightweight static helper for reading WooHog options from the database.
+ * Lightweight static helper for reading Advanced PostHog Analytics options from the database.
  */
-class WooHog_Settings {
+class APHA_Settings {
 
 	/**
 	 * Get the PostHog API key.
@@ -28,7 +28,7 @@ class WooHog_Settings {
 	 * @return string
 	 */
 	public static function get_api_key() {
-		return get_option( 'woohog_api_key', '' );
+		return get_option( 'apha_api_key', '' );
 	}
 
 	/**
@@ -37,7 +37,7 @@ class WooHog_Settings {
 	 * @return string 'us' or 'eu'.
 	 */
 	public static function get_region() {
-		return get_option( 'woohog_region', 'us' );
+		return get_option( 'apha_region', 'us' );
 	}
 
 	/**
@@ -49,7 +49,7 @@ class WooHog_Settings {
 	 * @return string Host URL without trailing slash.
 	 */
 	public static function get_posthog_host() {
-		$custom_proxy = get_option( 'woohog_custom_proxy_url', '' );
+		$custom_proxy = get_option( 'apha_custom_proxy_url', '' );
 
 		if ( ! empty( $custom_proxy ) ) {
 			return untrailingslashit( $custom_proxy );
@@ -81,7 +81,7 @@ class WooHog_Settings {
 	 * @return bool
 	 */
 	public static function is_server_tracking_enabled() {
-		return get_option( 'woohog_server_tracking', 'yes' ) === 'yes';
+		return get_option( 'apha_server_tracking', 'yes' ) === 'yes';
 	}
 
 	/**
@@ -90,7 +90,7 @@ class WooHog_Settings {
 	 * @return bool
 	 */
 	public static function is_frontend_tracking_enabled() {
-		return get_option( 'woohog_frontend_tracking', 'yes' ) === 'yes';
+		return get_option( 'apha_frontend_tracking', 'yes' ) === 'yes';
 	}
 
 	/**
@@ -99,7 +99,7 @@ class WooHog_Settings {
 	 * @return string 'always' or 'identified_only'.
 	 */
 	public static function get_person_profiles() {
-		return get_option( 'woohog_person_profiles', 'always' );
+		return get_option( 'apha_person_profiles', 'always' );
 	}
 
 	/**
@@ -108,6 +108,6 @@ class WooHog_Settings {
 	 * @return bool
 	 */
 	public static function is_consent_mode_enabled() {
-		return get_option( 'woohog_consent_mode', 'no' ) === 'yes';
+		return get_option( 'apha_consent_mode', 'no' ) === 'yes';
 	}
 }

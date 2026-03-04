@@ -1,22 +1,22 @@
 <?php
 /**
- * WooHog Product Data Helpers.
+ * Advanced PostHog Analytics Product Data Helpers.
  *
  * Provides utility methods for extracting structured product and order
  * data suitable for PostHog analytics events.
  *
- * @package WooHog
+ * @package AdvancedPostHogAnalytics
  */
 
 defined( 'ABSPATH' ) || exit;
 
 /**
- * Class WooHog_Product_Data
+ * Class APHA_Product_Data
  *
  * Extracts product, cart, and order data into associative arrays
  * for use in both server-side and client-side tracking events.
  */
-class WooHog_Product_Data {
+class APHA_Product_Data {
 
 	/**
 	 * Get structured product properties for a WooCommerce product.

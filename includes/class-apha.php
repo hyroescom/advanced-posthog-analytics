@@ -1,90 +1,90 @@
 <?php
 /**
- * WooHog Core Orchestrator.
+ * Advanced PostHog Analytics Core Orchestrator.
  *
- * Singleton class that bootstraps all WooHog sub-components
+ * Singleton class that bootstraps all Advanced PostHog Analytics sub-components
  * and wires them together.
  *
- * @package WooHog
+ * @package AdvancedPostHogAnalytics
  */
 
 defined( 'ABSPATH' ) || exit;
 
 /**
- * Class WooHog
+ * Class Advanced PostHog Analytics
  *
  * Main plugin class. Initializes settings, the PostHog API client,
  * identity management, attribution engine, and event tracking components.
  */
-class WooHog {
+class APHA {
 
 	/**
 	 * Singleton instance.
 	 *
-	 * @var WooHog|null
+	 * @var APHA|null
 	 */
 	private static $instance = null;
 
 	/**
 	 * PostHog API client.
 	 *
-	 * @var WooHog_PostHog_API|null
+	 * @var APHA_PostHog_API|null
 	 */
 	private $api = null;
 
 	/**
 	 * Identity manager.
 	 *
-	 * @var WooHog_Identity|null
+	 * @var APHA_Identity|null
 	 */
 	private $identity = null;
 
 	/**
 	 * Settings page instance.
 	 *
-	 * @var WooHog_Settings|null
+	 * @var APHA_Settings|null
 	 */
 	private $settings = null;
 
 	/**
 	 * Product data helper.
 	 *
-	 * @var WooHog_Product_Data|null
+	 * @var APHA_Product_Data|null
 	 */
 	private $product_data = null;
 
 	/**
 	 * Server-side event tracker.
 	 *
-	 * @var WooHog_Server_Events|null
+	 * @var APHA_Server_Events|null
 	 */
 	private $server_events = null;
 
 	/**
 	 * Frontend event tracker.
 	 *
-	 * @var WooHog_Frontend_Events|null
+	 * @var APHA_Frontend_Events|null
 	 */
 	private $frontend_events = null;
 
 	/**
 	 * Data layer for frontend.
 	 *
-	 * @var WooHog_Data_Layer|null
+	 * @var APHA_Data_Layer|null
 	 */
 	private $data_layer = null;
 
 	/**
 	 * Attribution engine.
 	 *
-	 * @var WooHog_Attribution|null
+	 * @var APHA_Attribution|null
 	 */
 	private $attribution = null;
 
 	/**
 	 * Get the singleton instance.
 	 *
-	 * @return WooHog
+	 * @return APHA
 	 */
 	public static function instance() {
 		if ( null === self::$instance ) {
@@ -105,26 +105,26 @@ class WooHog {
 		add_action( 'init', array( $this, 'register_settings_tab' ), 10 );
 
 		// Bail early if no API key is configured.
-		if ( empty( WooHog_Settings::get_api_key() ) ) {
+		if ( empty( APHA_Settings::get_api_key() ) ) {
 			return;
 		}
 
 		// Initialize the API client.
-		$this->api = new WooHog_PostHog_API();
+		$this->api = new APHA_PostHog_API();
 
 		// Initialize attribution engine (hooks into init at priority 5).
-		$this->attribution = new WooHog_Attribution();
+		$this->attribution = new APHA_Attribution();
 
 		// Initialize identity management.
-		$this->identity = new WooHog_Identity( $this->api );
+		$this->identity = new APHA_Identity( $this->api );
 		$this->identity->set_attribution( $this->attribution );
 
 		// Initialize product data helper.
-		$this->product_data = new WooHog_Product_Data();
+		$this->product_data = new APHA_Product_Data();
 
 		// Initialize server-side tracking if enabled.
-		if ( WooHog_Settings::is_server_tracking_enabled() ) {
-			$this->server_events = new WooHog_Server_Events(
+		if ( APHA_Settings::is_server_tracking_enabled() ) {
+			$this->server_events = new APHA_Server_Events(
 				$this->api,
 				$this->identity,
 				$this->product_data
@@ -133,14 +133,14 @@ class WooHog {
 		}
 
 		// Initialize frontend tracking if enabled.
-		if ( WooHog_Settings::is_frontend_tracking_enabled() ) {
-			$this->data_layer      = new WooHog_Data_Layer( $this->product_data );
-			$this->frontend_events = new WooHog_Frontend_Events();
+		if ( APHA_Settings::is_frontend_tracking_enabled() ) {
+			$this->data_layer      = new APHA_Data_Layer( $this->product_data );
+			$this->frontend_events = new APHA_Frontend_Events();
 		}
 	}
 
 	/**
-	 * Register the WooHog settings tab in WooCommerce > Settings.
+	 * Register the Advanced PostHog Analytics settings tab in WooCommerce > Settings.
 	 *
 	 * @return void
 	 */
@@ -149,7 +149,7 @@ class WooHog {
 	}
 
 	/**
-	 * Add the WooHog settings page to the WooCommerce settings pages array.
+	 * Add the Advanced PostHog Analytics settings page to the WooCommerce settings pages array.
 	 *
 	 * @param array $settings Array of WC_Settings_Page instances.
 	 *
@@ -159,15 +159,15 @@ class WooHog {
 		// Load the settings page class lazily — WC_Settings_Page is only
 		// available when WooCommerce admin is active (this filter only
 		// fires in admin context, so it's always safe here).
-		require_once WOOHOG_PLUGIN_DIR . 'includes/class-woohog-settings-page.php';
-		$settings[] = new WooHog_Settings_Page();
+		require_once APHA_PLUGIN_DIR . 'includes/class-apha-settings-page.php';
+		$settings[] = new APHA_Settings_Page();
 		return $settings;
 	}
 
 	/**
 	 * Get the PostHog API client instance.
 	 *
-	 * @return WooHog_PostHog_API|null
+	 * @return APHA_PostHog_API|null
 	 */
 	public function get_api() {
 		return $this->api;
@@ -176,7 +176,7 @@ class WooHog {
 	/**
 	 * Get the identity manager instance.
 	 *
-	 * @return WooHog_Identity|null
+	 * @return APHA_Identity|null
 	 */
 	public function get_identity() {
 		return $this->identity;
@@ -185,7 +185,7 @@ class WooHog {
 	/**
 	 * Get the attribution engine instance.
 	 *
-	 * @return WooHog_Attribution|null
+	 * @return APHA_Attribution|null
 	 */
 	public function get_attribution() {
 		return $this->attribution;

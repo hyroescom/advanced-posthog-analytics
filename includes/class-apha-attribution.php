@@ -1,45 +1,45 @@
 <?php
 /**
- * WooHog Attribution Engine.
+ * Advanced PostHog Analytics Attribution Engine.
  *
  * Captures UTM parameters and ad platform click IDs from incoming URLs,
  * stores them in server-side first-party cookies (bypassing Safari ITP
  * restrictions on JS cookies), and persists attribution data to order meta
  * at checkout for server-side event enrichment.
  *
- * @package WooHog
+ * @package AdvancedPostHogAnalytics
  */
 
 defined( 'ABSPATH' ) || exit;
 
 /**
- * Class WooHog_Attribution
+ * Class APHA_Attribution
  *
  * Implements first-touch / last-touch attribution with server-side cookies
  * and ad click ID capture for HYROS-level marketing attribution.
  */
-class WooHog_Attribution {
+class APHA_Attribution {
 
 	/**
 	 * Cookie name for first-touch attribution data.
 	 *
 	 * @var string
 	 */
-	const COOKIE_FIRST_TOUCH = 'woohog_ft';
+	const COOKIE_FIRST_TOUCH = 'apha_ft';
 
 	/**
 	 * Cookie name for last-touch attribution data.
 	 *
 	 * @var string
 	 */
-	const COOKIE_LAST_TOUCH = 'woohog_lt';
+	const COOKIE_LAST_TOUCH = 'apha_lt';
 
 	/**
 	 * Cookie name for ad platform click IDs.
 	 *
 	 * @var string
 	 */
-	const COOKIE_CLICK_IDS = 'woohog_cid';
+	const COOKIE_CLICK_IDS = 'apha_cid';
 
 	/**
 	 * UTM parameters to capture.
@@ -139,7 +139,7 @@ class WooHog_Attribution {
 	/**
 	 * Persist attribution cookies to order meta at checkout.
 	 *
-	 * Reads WooHog cookies first, falls back to WooCommerce 8.5+ native
+	 * Reads Advanced PostHog Analytics cookies first, falls back to WooCommerce 8.5+ native
 	 * attribution data when our cookies are missing.
 	 *
 	 * @param WC_Order $order WooCommerce order object.
@@ -164,7 +164,7 @@ class WooHog_Attribution {
 		if ( ! empty( $click_ids ) ) {
 			foreach ( self::CLICK_ID_PARAMS as $param => $expiry ) {
 				if ( ! empty( $click_ids[ $param ] ) ) {
-					$order->update_meta_data( '_woohog_' . $param, sanitize_text_field( $click_ids[ $param ] ) );
+					$order->update_meta_data( '_apha_' . $param, sanitize_text_field( $click_ids[ $param ] ) );
 				}
 			}
 		}
@@ -174,14 +174,14 @@ class WooHog_Attribution {
 			$first_visit  = strtotime( $first_touch['timestamp'] );
 			$now          = current_time( 'timestamp' ); // phpcs:ignore WordPress.DateTime.CurrentTimeTimestamp.Requested
 			$days         = $first_visit ? max( 0, floor( ( $now - $first_visit ) / DAY_IN_SECONDS ) ) : 0;
-			$order->update_meta_data( '_woohog_days_to_conversion', $days );
+			$order->update_meta_data( '_apha_days_to_conversion', $days );
 		}
 
 		// Session count from cookie visits (increment on each last-touch update).
-		$session_count = isset( $_COOKIE['woohog_sc'] ) ? absint( $_COOKIE['woohog_sc'] ) : 1;
-		$order->update_meta_data( '_woohog_session_count', $session_count );
+		$session_count = isset( $_COOKIE['apha_sc'] ) ? absint( $_COOKIE['apha_sc'] ) : 1;
+		$order->update_meta_data( '_apha_session_count', $session_count );
 
-		// Fallback: WooCommerce 8.5+ native attribution if WooHog cookies are empty.
+		// Fallback: WooCommerce 8.5+ native attribution if Advanced PostHog Analytics cookies are empty.
 		if ( empty( $first_touch ) && empty( $last_touch ) ) {
 			$this->fallback_wc_attribution( $order );
 		}
@@ -201,7 +201,7 @@ class WooHog_Attribution {
 		// First-touch.
 		$ft_fields = array( 'source', 'medium', 'campaign', 'content', 'term', 'landing_page', 'referrer' );
 		foreach ( $ft_fields as $field ) {
-			$value = $order->get_meta( '_woohog_ft_' . $field );
+			$value = $order->get_meta( '_apha_ft_' . $field );
 			if ( ! empty( $value ) ) {
 				$attribution[ 'first_touch_' . $field ] = $value;
 			}
@@ -210,7 +210,7 @@ class WooHog_Attribution {
 		// Last-touch.
 		$lt_fields = array( 'source', 'medium', 'campaign', 'content', 'term', 'landing_page', 'referrer' );
 		foreach ( $lt_fields as $field ) {
-			$value = $order->get_meta( '_woohog_lt_' . $field );
+			$value = $order->get_meta( '_apha_lt_' . $field );
 			if ( ! empty( $value ) ) {
 				$attribution[ 'last_touch_' . $field ] = $value;
 			}
@@ -218,19 +218,19 @@ class WooHog_Attribution {
 
 		// Click IDs.
 		foreach ( array_keys( self::CLICK_ID_PARAMS ) as $param ) {
-			$value = $order->get_meta( '_woohog_' . $param );
+			$value = $order->get_meta( '_apha_' . $param );
 			if ( ! empty( $value ) ) {
 				$attribution[ $param ] = $value;
 			}
 		}
 
 		// Conversion metrics.
-		$days = $order->get_meta( '_woohog_days_to_conversion' );
+		$days = $order->get_meta( '_apha_days_to_conversion' );
 		if ( '' !== $days ) {
 			$attribution['days_to_conversion'] = (int) $days;
 		}
 
-		$sessions = $order->get_meta( '_woohog_session_count' );
+		$sessions = $order->get_meta( '_apha_session_count' );
 		if ( ! empty( $sessions ) ) {
 			$attribution['session_count'] = (int) $sessions;
 		}
@@ -247,9 +247,9 @@ class WooHog_Attribution {
 	public function get_acquisition_properties( $order ) {
 		$properties = array();
 
-		$source   = $order->get_meta( '_woohog_ft_source' );
-		$medium   = $order->get_meta( '_woohog_ft_medium' );
-		$campaign = $order->get_meta( '_woohog_ft_campaign' );
+		$source   = $order->get_meta( '_apha_ft_source' );
+		$medium   = $order->get_meta( '_apha_ft_medium' );
+		$campaign = $order->get_meta( '_apha_ft_campaign' );
 
 		if ( ! empty( $source ) ) {
 			$properties['acquisition_source']   = $source;
@@ -366,7 +366,7 @@ class WooHog_Attribution {
 
 		foreach ( $fields as $field ) {
 			if ( ! empty( $data[ $field ] ) ) {
-				$order->update_meta_data( '_woohog_' . $prefix . '_' . $field, sanitize_text_field( $data[ $field ] ) );
+				$order->update_meta_data( '_apha_' . $prefix . '_' . $field, sanitize_text_field( $data[ $field ] ) );
 			}
 		}
 	}
@@ -374,7 +374,7 @@ class WooHog_Attribution {
 	/**
 	 * Read WooCommerce 8.5+ native attribution as fallback.
 	 *
-	 * When WooHog's own cookies are missing (blocked, expired), use WC's
+	 * When Advanced PostHog Analytics's own cookies are missing (blocked, expired), use WC's
 	 * built-in attribution data stored in _wc_order_attribution_* meta.
 	 *
 	 * @param WC_Order $order WooCommerce order object.
@@ -389,16 +389,16 @@ class WooHog_Attribution {
 			'utm_term'     => 'term',
 		);
 
-		foreach ( $wc_map as $wc_suffix => $woohog_field ) {
+		foreach ( $wc_map as $wc_suffix => $apha_field ) {
 			$value = $order->get_meta( '_wc_order_attribution_' . $wc_suffix );
 
 			if ( ! empty( $value ) ) {
 				// Store as both first-touch and last-touch since WC only has one.
-				if ( empty( $order->get_meta( '_woohog_ft_' . $woohog_field ) ) ) {
-					$order->update_meta_data( '_woohog_ft_' . $woohog_field, sanitize_text_field( $value ) );
+				if ( empty( $order->get_meta( '_apha_ft_' . $apha_field ) ) ) {
+					$order->update_meta_data( '_apha_ft_' . $apha_field, sanitize_text_field( $value ) );
 				}
-				if ( empty( $order->get_meta( '_woohog_lt_' . $woohog_field ) ) ) {
-					$order->update_meta_data( '_woohog_lt_' . $woohog_field, sanitize_text_field( $value ) );
+				if ( empty( $order->get_meta( '_apha_lt_' . $apha_field ) ) ) {
+					$order->update_meta_data( '_apha_lt_' . $apha_field, sanitize_text_field( $value ) );
 				}
 			}
 		}
@@ -406,17 +406,17 @@ class WooHog_Attribution {
 		// WC referrer.
 		$referrer = $order->get_meta( '_wc_order_attribution_referrer' );
 		if ( ! empty( $referrer ) ) {
-			if ( empty( $order->get_meta( '_woohog_ft_referrer' ) ) ) {
-				$order->update_meta_data( '_woohog_ft_referrer', esc_url_raw( $referrer ) );
+			if ( empty( $order->get_meta( '_apha_ft_referrer' ) ) ) {
+				$order->update_meta_data( '_apha_ft_referrer', esc_url_raw( $referrer ) );
 			}
-			if ( empty( $order->get_meta( '_woohog_lt_referrer' ) ) ) {
-				$order->update_meta_data( '_woohog_lt_referrer', esc_url_raw( $referrer ) );
+			if ( empty( $order->get_meta( '_apha_lt_referrer' ) ) ) {
+				$order->update_meta_data( '_apha_lt_referrer', esc_url_raw( $referrer ) );
 			}
 		}
 	}
 
 	/**
-	 * Get all WooHog meta keys used by the attribution engine.
+	 * Get all Advanced PostHog Analytics meta keys used by the attribution engine.
 	 *
 	 * Used by uninstall.php for cleanup.
 	 *
@@ -427,16 +427,16 @@ class WooHog_Attribution {
 
 		foreach ( array( 'ft', 'lt' ) as $prefix ) {
 			foreach ( array( 'source', 'medium', 'campaign', 'content', 'term', 'landing_page', 'referrer', 'timestamp' ) as $field ) {
-				$keys[] = '_woohog_' . $prefix . '_' . $field;
+				$keys[] = '_apha_' . $prefix . '_' . $field;
 			}
 		}
 
 		foreach ( array_keys( self::CLICK_ID_PARAMS ) as $param ) {
-			$keys[] = '_woohog_' . $param;
+			$keys[] = '_apha_' . $param;
 		}
 
-		$keys[] = '_woohog_days_to_conversion';
-		$keys[] = '_woohog_session_count';
+		$keys[] = '_apha_days_to_conversion';
+		$keys[] = '_apha_session_count';
 
 		return $keys;
 	}

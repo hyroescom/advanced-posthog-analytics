@@ -1,23 +1,23 @@
 <?php
 /**
- * WooHog Frontend Events.
+ * Advanced PostHog Analytics Frontend Events.
  *
- * Enqueues the PostHog JS SDK snippet and the WooHog tracker script
+ * Enqueues the PostHog JS SDK snippet and the Advanced PostHog Analytics tracker script
  * that captures client-side e-commerce events.
  *
- * @package WooHog
+ * @package AdvancedPostHogAnalytics
  */
 
 defined( 'ABSPATH' ) || exit;
 
 /**
- * Class WooHog_Frontend_Events
+ * Class APHA_Frontend_Events
  *
  * Outputs the PostHog JavaScript snippet in `wp_head` and enqueues
- * the WooHog tracker script in the footer to capture browsing,
+ * the Advanced PostHog Analytics tracker script in the footer to capture browsing,
  * cart, and checkout events on the frontend.
  */
-class WooHog_Frontend_Events {
+class APHA_Frontend_Events {
 
 	/**
 	 * Constructor.
@@ -30,7 +30,7 @@ class WooHog_Frontend_Events {
 	}
 
 	/**
-	 * Enqueue the WooHog tracker script.
+	 * Enqueue the Advanced PostHog Analytics tracker script.
 	 *
 	 * jQuery is not required — the tracker guards all jQuery usage with
 	 * `if (window.jQuery)` checks. This prevents forcing jQuery on
@@ -44,16 +44,16 @@ class WooHog_Frontend_Events {
 		}
 
 		wp_enqueue_script(
-			'woohog-tracker',
-			WOOHOG_PLUGIN_URL . 'assets/js/woohog-tracker.js',
+			'apha-tracker',
+			APHA_PLUGIN_URL . 'assets/js/apha-tracker.js',
 			array(),
-			WOOHOG_VERSION,
+			APHA_VERSION,
 			true
 		);
 
 		wp_localize_script(
-			'woohog-tracker',
-			'woohogConfig',
+			'apha-tracker',
+			'aphaConfig',
 			array(
 				'cartUrl' => wc_get_cart_url(),
 				'ajaxUrl' => admin_url( 'admin-ajax.php' ),
@@ -71,11 +71,11 @@ class WooHog_Frontend_Events {
 			return;
 		}
 
-		$api_key         = WooHog_Settings::get_api_key();
-		$api_host        = WooHog_Settings::get_posthog_host();
-		$ui_host         = WooHog_Settings::get_posthog_ui_host();
-		$person_profiles = WooHog_Settings::get_person_profiles();
-		$consent_mode    = WooHog_Settings::is_consent_mode_enabled();
+		$api_key         = APHA_Settings::get_api_key();
+		$api_host        = APHA_Settings::get_posthog_host();
+		$ui_host         = APHA_Settings::get_posthog_ui_host();
+		$person_profiles = APHA_Settings::get_person_profiles();
+		$consent_mode    = APHA_Settings::is_consent_mode_enabled();
 
 		if ( empty( $api_key ) ) {
 			return;
@@ -125,24 +125,24 @@ class WooHog_Frontend_Events {
 			<?php endif; ?>
 			<?php if ( $consent_mode ) : ?>
 
-			window.woohogOptIn = function() {
+			window.aphaOptIn = function() {
 				if (window.posthog) {
 					posthog.opt_in_capturing();
 					posthog.set_config({persistence: 'localStorage+cookie'});
 				}
 			};
-			window.woohogOptOut = function() {
+			window.aphaOptOut = function() {
 				if (window.posthog) {
 					posthog.opt_out_capturing();
 				}
 			};
 			// CookieYes integration.
 			document.addEventListener('cookie_consent_given', function() {
-				window.woohogOptIn();
+				window.aphaOptIn();
 			});
 			// Complianz integration.
 			document.addEventListener('cmplz_fire_statistics', function() {
-				window.woohogOptIn();
+				window.aphaOptIn();
 			});
 			<?php endif; ?>
 

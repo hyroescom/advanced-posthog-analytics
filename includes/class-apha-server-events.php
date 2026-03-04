@@ -1,48 +1,48 @@
 <?php
 /**
- * WooHog Server-Side Event Tracking.
+ * Advanced PostHog Analytics Server-Side Event Tracking.
  *
  * Captures order lifecycle events (completed, refunded, status changes)
  * via the PostHog API on the server side for reliable, tamper-proof tracking.
  *
- * @package WooHog
+ * @package AdvancedPostHogAnalytics
  */
 
 defined( 'ABSPATH' ) || exit;
 
 /**
- * Class WooHog_Server_Events
+ * Class APHA_Server_Events
  *
  * Hooks into WooCommerce order actions to fire PostHog events
  * server-side with deduplication and identity resolution.
  */
-class WooHog_Server_Events {
+class APHA_Server_Events {
 
 	/**
 	 * PostHog API instance.
 	 *
-	 * @var WooHog_PostHog_API
+	 * @var APHA_PostHog_API
 	 */
 	private $api;
 
 	/**
 	 * Identity manager instance.
 	 *
-	 * @var WooHog_Identity
+	 * @var APHA_Identity
 	 */
 	private $identity;
 
 	/**
 	 * Product data helper instance.
 	 *
-	 * @var WooHog_Product_Data
+	 * @var APHA_Product_Data
 	 */
 	private $product_data;
 
 	/**
 	 * Attribution engine instance (optional).
 	 *
-	 * @var WooHog_Attribution|null
+	 * @var APHA_Attribution|null
 	 */
 	private $attribution = null;
 
@@ -58,11 +58,11 @@ class WooHog_Server_Events {
 	/**
 	 * Constructor.
 	 *
-	 * @param WooHog_PostHog_API  $api          PostHog API instance.
-	 * @param WooHog_Identity     $identity     Identity manager instance.
-	 * @param WooHog_Product_Data $product_data Product data helper instance.
+	 * @param APHA_PostHog_API  $api          PostHog API instance.
+	 * @param APHA_Identity     $identity     Identity manager instance.
+	 * @param APHA_Product_Data $product_data Product data helper instance.
 	 */
-	public function __construct( WooHog_PostHog_API $api, WooHog_Identity $identity, WooHog_Product_Data $product_data ) {
+	public function __construct( APHA_PostHog_API $api, APHA_Identity $identity, APHA_Product_Data $product_data ) {
 		$this->api          = $api;
 		$this->identity     = $identity;
 		$this->product_data = $product_data;
@@ -84,10 +84,10 @@ class WooHog_Server_Events {
 	/**
 	 * Set the attribution engine instance.
 	 *
-	 * @param WooHog_Attribution $attribution Attribution engine.
+	 * @param APHA_Attribution $attribution Attribution engine.
 	 * @return void
 	 */
-	public function set_attribution( WooHog_Attribution $attribution ) {
+	public function set_attribution( APHA_Attribution $attribution ) {
 		$this->attribution = $attribution;
 	}
 
@@ -115,7 +115,7 @@ class WooHog_Server_Events {
 		}
 
 		// Cross-request deduplication via order meta.
-		$already_tracked = $order->get_meta( '_woohog_tracked' );
+		$already_tracked = $order->get_meta( '_apha_tracked' );
 
 		if ( ! empty( $already_tracked ) ) {
 			return;
@@ -134,7 +134,7 @@ class WooHog_Server_Events {
 		$success = $this->api->capture( $distinct_id, 'Order Completed', $properties, true );
 
 		if ( $success ) {
-			$order->update_meta_data( '_woohog_tracked', current_time( 'mysql' ) );
+			$order->update_meta_data( '_apha_tracked', current_time( 'mysql' ) );
 			$order->save();
 		}
 
@@ -159,7 +159,7 @@ class WooHog_Server_Events {
 		}
 
 		// Refund deduplication.
-		$refund_meta_key = '_woohog_refund_' . $refund_id . '_tracked';
+		$refund_meta_key = '_apha_refund_' . $refund_id . '_tracked';
 
 		if ( ! empty( $order->get_meta( $refund_meta_key ) ) ) {
 			return;

@@ -1,30 +1,30 @@
 <?php
 /**
- * WooHog Uninstall.
+ * Advanced PostHog Analytics Uninstall.
  *
- * Removes all WooHog data from the database when the plugin is
+ * Removes all Advanced PostHog Analytics data from the database when the plugin is
  * deleted via the WordPress admin. This includes plugin options,
  * order meta entries, and attribution data created during tracking.
  *
- * @package WooHog
+ * @package AdvancedPostHogAnalytics
  */
 
 // Exit if not called by WordPress during uninstall.
 defined( 'WP_UNINSTALL_PLUGIN' ) || exit;
 
 /*
- * Remove all WooHog plugin options.
+ * Remove all Advanced PostHog Analytics plugin options.
  */
-delete_option( 'woohog_api_key' );
-delete_option( 'woohog_region' );
-delete_option( 'woohog_custom_proxy_url' );
-delete_option( 'woohog_server_tracking' );
-delete_option( 'woohog_frontend_tracking' );
-delete_option( 'woohog_person_profiles' );
-delete_option( 'woohog_consent_mode' );
+delete_option( 'apha_api_key' );
+delete_option( 'apha_region' );
+delete_option( 'apha_custom_proxy_url' );
+delete_option( 'apha_server_tracking' );
+delete_option( 'apha_frontend_tracking' );
+delete_option( 'apha_person_profiles' );
+delete_option( 'apha_consent_mode' );
 
 /*
- * Remove WooHog order meta data.
+ * Remove Advanced PostHog Analytics order meta data.
  *
  * Includes identity tracking meta, attribution meta (first-touch,
  * last-touch, click IDs), and refund dedup meta.
@@ -33,37 +33,37 @@ global $wpdb;
 
 // Build the full list of meta keys to remove.
 $meta_keys = array(
-	'_woohog_tracked',
-	'_woohog_distinct_id',
+	'_apha_tracked',
+	'_apha_distinct_id',
 	// First-touch attribution.
-	'_woohog_ft_source',
-	'_woohog_ft_medium',
-	'_woohog_ft_campaign',
-	'_woohog_ft_content',
-	'_woohog_ft_term',
-	'_woohog_ft_landing_page',
-	'_woohog_ft_referrer',
-	'_woohog_ft_timestamp',
+	'_apha_ft_source',
+	'_apha_ft_medium',
+	'_apha_ft_campaign',
+	'_apha_ft_content',
+	'_apha_ft_term',
+	'_apha_ft_landing_page',
+	'_apha_ft_referrer',
+	'_apha_ft_timestamp',
 	// Last-touch attribution.
-	'_woohog_lt_source',
-	'_woohog_lt_medium',
-	'_woohog_lt_campaign',
-	'_woohog_lt_content',
-	'_woohog_lt_term',
-	'_woohog_lt_landing_page',
-	'_woohog_lt_referrer',
-	'_woohog_lt_timestamp',
+	'_apha_lt_source',
+	'_apha_lt_medium',
+	'_apha_lt_campaign',
+	'_apha_lt_content',
+	'_apha_lt_term',
+	'_apha_lt_landing_page',
+	'_apha_lt_referrer',
+	'_apha_lt_timestamp',
 	// Click IDs.
-	'_woohog_gclid',
-	'_woohog_gbraid',
-	'_woohog_wbraid',
-	'_woohog_fbclid',
-	'_woohog_ttclid',
-	'_woohog_msclkid',
-	'_woohog_li_fat_id',
+	'_apha_gclid',
+	'_apha_gbraid',
+	'_apha_wbraid',
+	'_apha_fbclid',
+	'_apha_ttclid',
+	'_apha_msclkid',
+	'_apha_li_fat_id',
 	// Conversion metrics.
-	'_woohog_days_to_conversion',
-	'_woohog_session_count',
+	'_apha_days_to_conversion',
+	'_apha_session_count',
 );
 
 // Build placeholders for the IN clause.
@@ -77,9 +77,9 @@ $wpdb->query(
 	)
 );
 
-// Also clean up refund dedup meta (pattern: _woohog_refund_{id}_tracked).
+// Also clean up refund dedup meta (pattern: _apha_refund_{id}_tracked).
 $wpdb->query(
-	"DELETE FROM {$wpdb->postmeta} WHERE meta_key LIKE '_woohog_refund_%_tracked'" // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared
+	"DELETE FROM {$wpdb->postmeta} WHERE meta_key LIKE '_apha_refund_%_tracked'" // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared
 );
 
 // HPOS orders meta table (WooCommerce 7.1+ with custom order tables enabled).
@@ -102,6 +102,6 @@ if ( $table_exists ) {
 	);
 
 	$wpdb->query(
-		"DELETE FROM {$wpdb->prefix}wc_orders_meta WHERE meta_key LIKE '_woohog_refund_%_tracked'" // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared
+		"DELETE FROM {$wpdb->prefix}wc_orders_meta WHERE meta_key LIKE '_apha_refund_%_tracked'" // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared
 	);
 }
