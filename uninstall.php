@@ -32,7 +32,7 @@ delete_option( 'apha_consent_mode' );
 global $wpdb;
 
 // Build the full list of meta keys to remove.
-$meta_keys = array(
+$apha_meta_keys = array(
 	'_apha_tracked',
 	'_apha_distinct_id',
 	// First-touch attribution.
@@ -67,41 +67,41 @@ $meta_keys = array(
 );
 
 // Build placeholders for the IN clause.
-$placeholders = implode( ', ', array_fill( 0, count( $meta_keys ), '%s' ) );
+$apha_placeholders = implode( ', ', array_fill( 0, count( $apha_meta_keys ), '%s' ) );
 
 // Legacy post meta (pre-HPOS orders stored as posts).
-$wpdb->query(
+$wpdb->query( // phpcs:ignore WordPress.DB.DirectDatabaseQuery
 	$wpdb->prepare(
-		"DELETE FROM {$wpdb->postmeta} WHERE meta_key IN ($placeholders)", // phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared
-		...$meta_keys
+		"DELETE FROM {$wpdb->postmeta} WHERE meta_key IN ($apha_placeholders)", // phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared,WordPress.DB.PreparedSQLPlaceholders.UnfinishedPrepare
+		...$apha_meta_keys
 	)
 );
 
 // Also clean up refund dedup meta (pattern: _apha_refund_{id}_tracked).
-$wpdb->query(
+$wpdb->query( // phpcs:ignore WordPress.DB.DirectDatabaseQuery
 	"DELETE FROM {$wpdb->postmeta} WHERE meta_key LIKE '_apha_refund_%_tracked'" // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared
 );
 
 // HPOS orders meta table (WooCommerce 7.1+ with custom order tables enabled).
-$hpos_meta_table = $wpdb->prefix . 'wc_orders_meta';
+$apha_hpos_meta_table = $wpdb->prefix . 'wc_orders_meta';
 
-$table_exists = $wpdb->get_var(
+$apha_table_exists = $wpdb->get_var( // phpcs:ignore WordPress.DB.DirectDatabaseQuery
 	$wpdb->prepare(
 		'SELECT COUNT(1) FROM information_schema.tables WHERE table_schema = %s AND table_name = %s',
 		DB_NAME,
-		$hpos_meta_table
+		$apha_hpos_meta_table
 	)
 );
 
-if ( $table_exists ) {
-	$wpdb->query(
+if ( $apha_table_exists ) {
+	$wpdb->query( // phpcs:ignore WordPress.DB.DirectDatabaseQuery
 		$wpdb->prepare(
-			"DELETE FROM {$wpdb->prefix}wc_orders_meta WHERE meta_key IN ($placeholders)", // phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared
-			...$meta_keys
+			"DELETE FROM {$wpdb->prefix}wc_orders_meta WHERE meta_key IN ($apha_placeholders)", // phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared,WordPress.DB.PreparedSQLPlaceholders.UnfinishedPrepare
+			...$apha_meta_keys
 		)
 	);
 
-	$wpdb->query(
+	$wpdb->query( // phpcs:ignore WordPress.DB.DirectDatabaseQuery
 		"DELETE FROM {$wpdb->prefix}wc_orders_meta WHERE meta_key LIKE '_apha_refund_%_tracked'" // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared
 	);
 }

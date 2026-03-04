@@ -167,10 +167,10 @@ class APHA_Data_Layer {
 	 * @return array Product data including variation info for variable products.
 	 */
 	private function get_product_data() {
-		global $product;
+		global $product; // phpcs:ignore WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedVariableFound -- WooCommerce global.
 
 		if ( ! $product instanceof WC_Product ) {
-			$product = wc_get_product( get_the_ID() );
+			$product = wc_get_product( get_the_ID() ); // phpcs:ignore WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedVariableFound -- WooCommerce global.
 		}
 
 		if ( ! $product ) {

@@ -216,7 +216,7 @@ class APHA_PostHog_API {
 		);
 
 		if ( is_wp_error( $response ) ) {
-			error_log( 'APHA: PostHog API error - ' . $response->get_error_message() );
+			wc_get_logger()->error( 'PostHog API error - ' . $response->get_error_message(), array( 'source' => 'advanced-posthog-analytics' ) );
 			return false;
 		}
 
@@ -224,11 +224,12 @@ class APHA_PostHog_API {
 			$response_code = wp_remote_retrieve_response_code( $response );
 
 			if ( 200 !== $response_code ) {
-				error_log(
+				wc_get_logger()->error(
 					sprintf(
-						'APHA: PostHog API returned HTTP %d.',
+						'PostHog API returned HTTP %d.',
 						$response_code
-					)
+					),
+					array( 'source' => 'advanced-posthog-analytics' )
 				);
 				return false;
 			}

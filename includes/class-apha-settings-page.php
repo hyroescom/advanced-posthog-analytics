@@ -121,6 +121,6 @@ class APHA_Settings_Page extends WC_Settings_Page {
 			),
 		);
 
-		return apply_filters( 'woocommerce_get_settings_' . $this->id, $settings );
+		return apply_filters( 'woocommerce_get_settings_' . $this->id, $settings ); // phpcs:ignore WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedHooknameFound -- Standard WooCommerce settings filter.
 	}
 }

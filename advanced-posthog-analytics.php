@@ -11,7 +11,6 @@
  * WC requires at least: 7.0
  * WC tested up to: 9.6
  * Text Domain: advanced-posthog-analytics
- * Domain Path: /languages
  * License: GPL-2.0-or-later
  * License URI: https://www.gnu.org/licenses/gpl-2.0.html
  *
@@ -60,7 +59,7 @@ add_action(
 add_filter(
 	'plugin_action_links_' . plugin_basename( __FILE__ ),
 	function ( $links ) {
-		$settings_url  = admin_url( 'admin.php?page=wc-settings&tab=apha' );
+		$settings_url  = admin_url( 'admin.php?page=wc-settings&tab=advanced-posthog-analytics' );
 		$settings_link = '<a href="' . esc_url( $settings_url ) . '">' . esc_html__( 'Settings', 'advanced-posthog-analytics' ) . '</a>';
 		array_unshift( $links, $settings_link );
 		return $links;
