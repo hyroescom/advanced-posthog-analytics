@@ -1,0 +1,15 @@
+# OS files
+.DS_Store
+Thumbs.db
+
+# IDE
+.idea/
+.vscode/
+*.sublime-*
+
+# Build artifacts
+*.zip
+node_modules/
+
+# Claude
+.claude/
