@@ -4,7 +4,7 @@ Tags: posthog, woocommerce, analytics, attribution, ecommerce
 Requires at least: 5.8
 Tested up to: 6.9
 Requires PHP: 7.4
-Stable tag: 1.2.0
+Stable tag: 1.3.0
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -117,6 +117,16 @@ Yes. Both classic (shortcode) and block-based checkout flows are fully supported
 
 == Changelog ==
 
+= 1.3.0 =
+* New: Element visibility tracking — fire PostHog events when visitors see key page elements
+* New: Add CSS class `apha-track-view` to any element (works with Elementor, Block Editor, raw HTML)
+* New: Custom event names via `data-apha-event` attribute
+* New: Custom visibility threshold via `data-apha-threshold` attribute (default 50%)
+* New: IntersectionObserver-based — no scroll listeners, great performance
+* New: MutationObserver catches lazy-loaded/dynamic content
+* New: "Element Visibility Tracking" toggle in WooCommerce > Settings > PostHog Analytics
+* New: Consent-aware — re-initializes after opt-in when consent mode is active
+
 = 1.2.0 =
 * New: Form identification — identifies anonymous visitors in PostHog when they enter an email in any form (checkout, contact, signup)
 * New: Supports WooCommerce classic checkout, block checkout, and generic forms (Elementor, CF7, WPForms, plain HTML)
@@ -158,6 +168,9 @@ Yes. Both classic (shortcode) and block-based checkout flows are fully supported
 * Identity management with cookie-based distinct IDs
 
 == Upgrade Notice ==
+
+= 1.3.0 =
+New element visibility tracking lets you know who actually saw key content on your landing pages — not just who triggered a pageview. Add `apha-track-view` class to any element.
 
 = 1.2.0 =
 New form identification feature links anonymous visitors to PostHog profiles when they enter their email in any form. Works with all form builders and WooCommerce checkout flows.

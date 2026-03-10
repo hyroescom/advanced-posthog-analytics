@@ -124,6 +124,14 @@ class APHA_Settings_Page extends WC_Settings_Page {
 			),
 
 			array(
+				'title'   => __( 'Element Visibility Tracking', 'advanced-posthog-analytics' ),
+				'desc'    => __( 'Track when visitors see key page elements. Add CSS class <code>apha-track-view</code> to any element.', 'advanced-posthog-analytics' ),
+				'id'      => 'apha_element_visibility',
+				'type'    => 'checkbox',
+				'default' => 'no',
+			),
+
+			array(
 				'type' => 'sectionend',
 				'id'   => 'apha_tracking_options',
 			),

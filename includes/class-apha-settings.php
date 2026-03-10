@@ -119,4 +119,13 @@ class APHA_Settings {
 	public static function is_form_identify_enabled() {
 		return get_option( 'apha_form_identify', 'yes' ) === 'yes';
 	}
+
+	/**
+	 * Check whether element visibility tracking is enabled.
+	 *
+	 * @return bool
+	 */
+	public static function is_element_visibility_enabled() {
+		return get_option( 'apha_element_visibility', 'no' ) === 'yes';
+	}
 }

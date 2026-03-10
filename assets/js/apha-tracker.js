@@ -100,11 +100,7 @@
 			props.name = name;
 		}
 
-		if (window.aphaConfig && window.aphaConfig.personProfiles === 'identified_only') {
-			window.posthog.identify(email, props);
-		} else {
-			window.posthog.setPersonProperties(props);
-		}
+		window.posthog.identify(email, props);
 	}
 
 	/**
@@ -249,6 +245,141 @@
 
 	// Expose for consent re-entry via aphaOptIn().
 	window.aphaInitFormIdentify = initFormIdentify;
+
+	/**
+	 * Initialize element visibility tracking.
+	 *
+	 * Uses IntersectionObserver to fire a PostHog event when elements
+	 * with the CSS class `apha-track-view` become visible in the viewport.
+	 */
+	function initElementVisibility() {
+		if (!window.aphaConfig || window.aphaConfig.elementVisibility !== '1') {
+			return;
+		}
+
+		if (typeof IntersectionObserver === 'undefined') {
+			return;
+		}
+
+		if (!window.posthog) {
+			return;
+		}
+
+		// Respect consent mode.
+		if (typeof window.posthog.has_opted_out_capturing === 'function' &&
+			window.posthog.has_opted_out_capturing()) {
+			return;
+		}
+
+		var pageLoadTime = Date.now();
+
+		/**
+		 * Build event properties for a visible element.
+		 *
+		 * @param {Element} el    The observed element.
+		 * @return {Object} Event properties.
+		 */
+		function buildProps(el) {
+			var allTracked = document.querySelectorAll('.apha-track-view');
+			var position = 1;
+			for (var i = 0; i < allTracked.length; i++) {
+				if (allTracked[i] === el) {
+					position = i + 1;
+					break;
+				}
+			}
+
+			var text = (el.innerText || '').trim();
+			if (text.length > 150) {
+				text = text.substring(0, 150);
+			}
+
+			var docHeight = document.documentElement.scrollHeight || 1;
+			var rect = el.getBoundingClientRect();
+			var elementTop = rect.top + (window.pageYOffset || document.documentElement.scrollTop);
+			var viewportPercent = Math.round((elementTop / docHeight) * 100);
+
+			return {
+				element_tag: el.tagName,
+				element_text: text,
+				element_id: el.id || '',
+				element_classes: el.className || '',
+				element_position: position,
+				viewport_percent: viewportPercent,
+				time_on_page_sec: parseFloat(((Date.now() - pageLoadTime) / 1000).toFixed(1))
+			};
+		}
+
+		/** @type {Object<string, IntersectionObserver>} Observers keyed by threshold. */
+		var observers = {};
+
+		/**
+		 * Get or create an IntersectionObserver for the given threshold.
+		 *
+		 * @param {number} threshold Visibility threshold (0–1).
+		 * @return {IntersectionObserver}
+		 */
+		function getObserver(threshold) {
+			var key = String(threshold);
+			if (observers[key]) {
+				return observers[key];
+			}
+
+			observers[key] = new IntersectionObserver(function (entries) {
+				for (var i = 0; i < entries.length; i++) {
+					var entry = entries[i];
+					if (!entry.isIntersecting) {
+						continue;
+					}
+
+					var target = entry.target;
+					observers[key].unobserve(target);
+
+					var eventName = target.getAttribute('data-apha-event') || 'Element Viewed';
+					var props = buildProps(target);
+					capture(eventName, props);
+				}
+			}, {threshold: threshold});
+
+			return observers[key];
+		}
+
+		/**
+		 * Scan for new .apha-track-view elements and observe them.
+		 */
+		function scanElements() {
+			var elements = document.querySelectorAll('.apha-track-view');
+			for (var i = 0; i < elements.length; i++) {
+				var el = elements[i];
+				if (el.dataset.aphaVisibilityWatched) {
+					continue;
+				}
+				el.dataset.aphaVisibilityWatched = '1';
+
+				var thresholdAttr = el.getAttribute('data-apha-threshold');
+				var threshold = thresholdAttr ? parseFloat(thresholdAttr) : 0.5;
+				if (isNaN(threshold) || threshold < 0 || threshold > 1) {
+					threshold = 0.5;
+				}
+
+				getObserver(threshold).observe(el);
+			}
+		}
+
+		// Initial scan.
+		scanElements();
+
+		// Watch for dynamically added elements.
+		if (typeof MutationObserver !== 'undefined') {
+			var mutationObserver = new MutationObserver(function () {
+				scanElements();
+			});
+			mutationObserver.observe(document.body, {childList: true, subtree: true});
+		}
+	}
+
+	// Expose for consent re-entry via aphaOptIn().
+	window.aphaInitElementVisibility = initElementVisibility;
 
 	/**
 	 * Build a human-readable variant label from a variation's attributes.
@@ -587,6 +718,9 @@
 
 		// --- Form Identification ---
 		initFormIdentify();
+
+		// --- Element Visibility Tracking ---
+		initElementVisibility();
 	}
 
 	/**

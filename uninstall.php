@@ -22,6 +22,8 @@ delete_option( 'apha_server_tracking' );
 delete_option( 'apha_frontend_tracking' );
 delete_option( 'apha_person_profiles' );
 delete_option( 'apha_consent_mode' );
+delete_option( 'apha_form_identify' );
+delete_option( 'apha_element_visibility' );
 
 /*
  * Remove Advanced PostHog Analytics order meta data.

@@ -289,7 +289,14 @@ class APHA_Identity {
 			$person_set_once = array_merge( $person_set_once, $acquisition );
 		}
 
-		$this->api->identify( $distinct_id, $person_set, $person_set_once );
+		$email = $order->get_billing_email();
+
+		if ( ! empty( $email ) && ! str_starts_with( $distinct_id, 'wp_' ) && $distinct_id !== $email ) {
+			// Anonymous UUID — merge with email so PostHog links all sessions.
+			$this->api->merge_identities( $email, $distinct_id, $person_set, $person_set_once );
+		} else {
+			$this->api->identify( $distinct_id, $person_set, $person_set_once );
+		}
 	}
 
 	/**
