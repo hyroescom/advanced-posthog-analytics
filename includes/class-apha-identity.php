@@ -176,6 +176,14 @@ class APHA_Identity {
 			return 'wp_' . $customer_id;
 		}
 
+		// Use billing email when available (e.g. upsell orders with no browser cookie).
+		$email = $order->get_billing_email();
+		if ( ! empty( $email ) ) {
+			$order->update_meta_data( '_apha_distinct_id', $email );
+			$order->save();
+			return $email;
+		}
+
 		// Last resort: generate a new UUID so the event still has an identity.
 		$fallback_id = wp_generate_uuid4();
 		$order->update_meta_data( '_apha_distinct_id', $fallback_id );

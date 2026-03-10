@@ -194,7 +194,7 @@
 				var name = getNameFromContext(emailInput);
 				identifyFromForm(email, name);
 				identified = true;
-			}, 400);
+			}, 100);
 		};
 
 		// WooCommerce classic checkout.
@@ -240,6 +240,68 @@
 
 			// Fire immediately since this blur already occurred.
 			handler();
+		}, true);
+
+		// Catch form submissions — fires synchronously before AJAX handlers.
+		document.addEventListener('submit', function (e) {
+			if (identified) {
+				return;
+			}
+
+			var form = e.target;
+			if (!form || form.tagName !== 'FORM') {
+				return;
+			}
+
+			var emailInput = form.querySelector('input[type="email"], input[name*="email"], input[id*="email"]');
+			if (!emailInput) {
+				return;
+			}
+
+			var email = emailInput.value.trim();
+			if (!isValidEmail(email)) {
+				return;
+			}
+
+			var name = getNameFromContext(emailInput);
+			identifyFromForm(email, name);
+			identified = true;
+		}, true);
+
+		// Autofill safety net — catches browser/programmatic fills without blur.
+		document.addEventListener('input', function (e) {
+			if (identified) {
+				return;
+			}
+
+			var target = e.target;
+			if (target.tagName !== 'INPUT') {
+				return;
+			}
+
+			var isEmail = target.type === 'email' ||
+				/email/i.test(target.name || '') ||
+				/email/i.test(target.id || '');
+
+			if (!isEmail) {
+				return;
+			}
+
+			if (!target._aphaInputHandler) {
+				target._aphaInputHandler = debounce(function () {
+					if (identified) {
+						return;
+					}
+					var email = target.value.trim();
+					if (!isValidEmail(email)) {
+						return;
+					}
+					var name = getNameFromContext(target);
+					identifyFromForm(email, name);
+					identified = true;
+				}, 1500);
+			}
+			target._aphaInputHandler();
 		}, true);
 	}
 

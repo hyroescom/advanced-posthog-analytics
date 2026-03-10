@@ -121,8 +121,14 @@ class APHA_Server_Events {
 			return;
 		}
 
-		$distinct_id = $this->identity->get_distinct_id_for_order( $order );
-		$properties  = $this->product_data->get_order_properties( $order );
+		// Identify first so the person merge resolves before the event is captured.
+		$this->identity->identify_from_order( $order );
+
+		// Use email as distinct_id when available so the event is attributed directly.
+		$email = $order->get_billing_email();
+		$distinct_id = ! empty( $email ) ? $email : $this->identity->get_distinct_id_for_order( $order );
+
+		$properties = $this->product_data->get_order_properties( $order );
 
 		// Merge attribution data into event properties.
 		if ( $this->attribution ) {
@@ -137,9 +143,6 @@ class APHA_Server_Events {
 			$order->update_meta_data( '_apha_tracked', current_time( 'mysql' ) );
 			$order->save();
 		}
-
-		// Set person properties from order data with LTV enrichment.
-		$this->identity->identify_from_order( $order );
 	}
 
 	/**

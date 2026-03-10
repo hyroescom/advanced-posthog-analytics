@@ -4,7 +4,7 @@ Tags: posthog, woocommerce, analytics, attribution, ecommerce
 Requires at least: 5.8
 Tested up to: 6.9
 Requires PHP: 7.4
-Stable tag: 1.3.0
+Stable tag: 1.3.1
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -117,6 +117,13 @@ Yes. Both classic (shortcode) and block-based checkout flows are fully supported
 
 == Changelog ==
 
+= 1.3.1 =
+* Fix: Form identify race condition — added submit listener to catch email before Elementor/AJAX redirect
+* Fix: Autofill safety net — input listener catches browser autofill without blur
+* Fix: Reduced form identify debounce from 400ms to 100ms
+* Fix: Order Completed now fires identify before capture — events use email as distinct_id
+* Fix: Upsell orders use billing email instead of random UUID fallback
+
 = 1.3.0 =
 * New: Element visibility tracking — fire PostHog events when visitors see key page elements
 * New: Add CSS class `apha-track-view` to any element (works with Elementor, Block Editor, raw HTML)
@@ -168,6 +175,9 @@ Yes. Both classic (shortcode) and block-based checkout flows are fully supported
 * Identity management with cookie-based distinct IDs
 
 == Upgrade Notice ==
+
+= 1.3.1 =
+Fixes identity stitching — form identify now fires on submit (not just blur), Order Completed events use email as distinct_id, and upsell orders are properly attributed.
 
 = 1.3.0 =
 New element visibility tracking lets you know who actually saw key content on your landing pages — not just who triggered a pageview. Add `apha-track-view` class to any element.
