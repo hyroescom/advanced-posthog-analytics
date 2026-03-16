@@ -1,11 +1,11 @@
 <?php
 /**
- * Advanced PostHog Analytics Server-Side Event Tracking.
+ * InsightTrail for PostHog Server-Side Event Tracking.
  *
  * Captures order lifecycle events (completed, refunded, status changes)
  * via the PostHog API on the server side for reliable, tamper-proof tracking.
  *
- * @package AdvancedPostHogAnalytics
+ * @package InsightTrailForPostHog
  */
 
 defined( 'ABSPATH' ) || exit;

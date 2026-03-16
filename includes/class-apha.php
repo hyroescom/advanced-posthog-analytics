@@ -1,17 +1,17 @@
 <?php
 /**
- * Advanced PostHog Analytics Core Orchestrator.
+ * InsightTrail for PostHog Core Orchestrator.
  *
- * Singleton class that bootstraps all Advanced PostHog Analytics sub-components
+ * Singleton class that bootstraps all InsightTrail for PostHog sub-components
  * and wires them together.
  *
- * @package AdvancedPostHogAnalytics
+ * @package InsightTrailForPostHog
  */
 
 defined( 'ABSPATH' ) || exit;
 
 /**
- * Class Advanced PostHog Analytics
+ * Class InsightTrail for PostHog
  *
  * Main plugin class. Initializes settings, the PostHog API client,
  * identity management, attribution engine, and event tracking components.
@@ -140,7 +140,7 @@ class APHA {
 	}
 
 	/**
-	 * Register the Advanced PostHog Analytics settings tab in WooCommerce > Settings.
+	 * Register the InsightTrail for PostHog settings tab in WooCommerce > Settings.
 	 *
 	 * @return void
 	 */
@@ -149,7 +149,7 @@ class APHA {
 	}
 
 	/**
-	 * Add the Advanced PostHog Analytics settings page to the WooCommerce settings pages array.
+	 * Add the InsightTrail for PostHog settings page to the WooCommerce settings pages array.
 	 *
 	 * @param array $settings Array of WC_Settings_Page instances.
 	 *

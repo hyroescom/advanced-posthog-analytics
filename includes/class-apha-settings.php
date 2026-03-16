@@ -1,6 +1,6 @@
 <?php
 /**
- * Advanced PostHog Analytics Settings Helpers.
+ * InsightTrail for PostHog Settings Helpers.
  *
  * Provides static accessor methods for plugin options. This class
  * does NOT extend WC_Settings_Page so it can be safely loaded on
@@ -10,7 +10,7 @@
  * The actual WC_Settings_Page tab is registered lazily via the
  * `woocommerce_get_settings_pages` filter in APHA::add_settings_page().
  *
- * @package AdvancedPostHogAnalytics
+ * @package InsightTrailForPostHog
  */
 
 defined( 'ABSPATH' ) || exit;
@@ -18,7 +18,7 @@ defined( 'ABSPATH' ) || exit;
 /**
  * Class APHA_Settings
  *
- * Lightweight static helper for reading Advanced PostHog Analytics options from the database.
+ * Lightweight static helper for reading InsightTrail for PostHog options from the database.
  */
 class APHA_Settings {
 

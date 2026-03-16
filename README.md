@@ -1,14 +1,12 @@
-# Advanced PostHog Analytics
+# InsightTrail for PostHog
 
 **PostHog Analytics for WooCommerce** — server-side event tracking, marketing attribution engine, identity stitching, and LTV enrichment.
 
-A free, open-source alternative to HYROS for WooCommerce stores.
-
 ---
 
-## What Advanced PostHog Analytics Does
+## What InsightTrail Does
 
-Advanced PostHog Analytics connects your WooCommerce store to [PostHog](https://posthog.com) and tracks the complete customer journey — from the first ad click to lifetime value.
+InsightTrail connects your WooCommerce store to [PostHog](https://posthog.com) and tracks the complete customer journey — from the first ad click to lifetime value.
 
 | Capability | What You Get |
 |---|---|
@@ -21,31 +19,14 @@ Advanced PostHog Analytics connects your WooCommerce store to [PostHog](https://
 
 ---
 
-## Why Not Just Use HYROS?
-
-| | HYROS | Advanced PostHog Analytics |
-|---|---|---|
-| **Cost** | $300–800/mo | Free |
-| **Data ownership** | Their servers | Your PostHog instance |
-| **UTM + Click ID tracking** | Yes | Yes |
-| **First-party cookies (ITP-safe)** | Yes (server-side) | Yes (server-side) |
-| **First-touch / Last-touch** | Yes | Yes |
-| **LTV on person profiles** | Yes | Yes |
-| **Funnels, cohorts, dashboards** | Limited | Full PostHog power |
-| **Session replay** | No | Yes (PostHog) |
-| **Feature flags** | No | Yes (PostHog) |
-| **Open source** | No | GPL-2.0 |
-
----
-
 ## Installation
 
 ### From GitHub
 
-1. Download the [latest release](https://github.com/hyroescom/advanced-posthog-analytics/releases)
+1. Download the [latest release](https://github.com/hyroescom/insighttrail-for-posthog/releases)
 2. Upload the zip via **Plugins > Add New > Upload Plugin** in WordPress
-3. Activate Advanced PostHog Analytics
-4. Go to **WooCommerce > Settings > Advanced PostHog Analytics**
+3. Activate InsightTrail for PostHog
+4. Go to **WooCommerce > Settings > InsightTrail**
 5. Enter your PostHog API key (`phc_...`)
 6. Select your region (US or EU)
 7. Done — events start flowing immediately
@@ -54,7 +35,7 @@ Advanced PostHog Analytics connects your WooCommerce store to [PostHog](https://
 
 ```bash
 cd wp-content/plugins/
-git clone https://github.com/hyroescom/advanced-posthog-analytics.git
+git clone https://github.com/hyroescom/insighttrail-for-posthog.git
 ```
 
 Activate in WordPress admin.
@@ -63,7 +44,7 @@ Activate in WordPress admin.
 
 ## Configuration
 
-All settings are in **WooCommerce > Settings > Advanced PostHog Analytics**.
+All settings are in **WooCommerce > Settings > InsightTrail**.
 
 | Setting | Description | Default |
 |---|---|---|
@@ -107,7 +88,7 @@ All settings are in **WooCommerce > Settings > Advanced PostHog Analytics**.
 
 ## Attribution Engine
 
-Advanced PostHog Analytics captures marketing attribution data on every visit and persists it to orders:
+InsightTrail captures marketing attribution data on every visit and persists it to orders:
 
 ### What Gets Captured
 
@@ -123,9 +104,9 @@ Visit with ?utm_source=google&gclid=abc123
     ↓
 Server-side PHP setcookie() — bypasses Safari ITP
     ↓
-advanced-posthog-analytics_ft (first-touch, 365 days) — set once, never overwritten
-advanced-posthog-analytics_lt (last-touch, 30 days) — overwritten each attributed visit
-advanced-posthog-analytics_cid (click IDs, 90 days) — latest click IDs
+apha_ft (first-touch, 365 days) — set once, never overwritten
+apha_lt (last-touch, 30 days) — overwritten each attributed visit
+apha_cid (click IDs, 90 days) — latest click IDs
     ↓
 At checkout: cookies → order meta → PostHog event properties
     ↓
@@ -139,11 +120,11 @@ Order Completed event includes:
 
 ### Safari ITP Bypass
 
-JavaScript-set cookies with tracking parameters (like `fbclid`) are capped at **24 hours** by Safari's Intelligent Tracking Prevention. Advanced PostHog Analytics uses PHP `setcookie()` — these are server-set first-party cookies and persist for the full configured duration (up to 1 year).
+JavaScript-set cookies with tracking parameters (like `fbclid`) are capped at **24 hours** by Safari's Intelligent Tracking Prevention. InsightTrail uses PHP `setcookie()` — these are server-set first-party cookies and persist for the full configured duration (up to 1 year).
 
 ### WooCommerce Native Fallback
 
-When Advanced PostHog Analytics's cookies are unavailable (blocked, expired), the plugin reads WooCommerce 8.5+'s built-in `_wc_order_attribution_*` meta as a fallback.
+When InsightTrail's cookies are unavailable (blocked, expired), the plugin reads WooCommerce 8.5+'s built-in `_wc_order_attribution_*` meta as a fallback.
 
 ---
 
@@ -151,7 +132,7 @@ When Advanced PostHog Analytics's cookies are unavailable (blocked, expired), th
 
 The #1 issue with WooCommerce + PostHog setups: browser events and server events use different identities, breaking funnels.
 
-Advanced PostHog Analytics solves this:
+InsightTrail solves this:
 
 | Scenario | Browser Events | Server Events | Connected? |
 |---|---|---|---|
@@ -163,7 +144,7 @@ Advanced PostHog Analytics solves this:
 
 ## Person Profile Enrichment
 
-After every order, Advanced PostHog Analytics updates the PostHog person profile:
+After every order, InsightTrail updates the PostHog person profile:
 
 **`$set` (always updated):**
 - `email`, `name`, `phone`, `city`, `state`, `country`
@@ -204,8 +185,8 @@ Build powerful PostHog cohorts like:
 
 | Filter | Description | Default |
 |---|---|---|
-| `advanced-posthog-analytics_data_layer` | Modify the frontend data layer before output | — |
-| `advanced-posthog-analytics_max_products_in_data_layer` | Cap products in data layer on list pages | `48` |
+| `apha_data_layer` | Modify the frontend data layer before output | — |
+| `apha_max_products_in_data_layer` | Cap products in data layer on list pages | `48` |
 
 ---
 

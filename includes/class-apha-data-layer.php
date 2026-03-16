@@ -1,11 +1,11 @@
 <?php
 /**
- * Advanced PostHog Analytics Data Layer.
+ * InsightTrail for PostHog Data Layer.
  *
  * Outputs a JavaScript data layer object in the footer containing
  * structured e-commerce data for the current page context.
  *
- * @package AdvancedPostHogAnalytics
+ * @package InsightTrailForPostHog
  */
 
 defined( 'ABSPATH' ) || exit;
@@ -82,7 +82,11 @@ class APHA_Data_Layer {
 		 */
 		$data = apply_filters( 'apha_data_layer', $data );
 
-		echo '<script>window.aphaDataLayer = ' . wp_json_encode( $data ) . ';</script>' . "\n";
+		wp_add_inline_script(
+			'apha-tracker',
+			'window.aphaDataLayer = ' . wp_json_encode( $data ) . ';',
+			'before'
+		);
 	}
 
 	/**
