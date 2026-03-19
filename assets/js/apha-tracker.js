@@ -48,6 +48,17 @@
 	}
 
 	/**
+	 * Set a cookie with a 1-day expiry.
+	 *
+	 * @param {string} name  Cookie name.
+	 * @param {string} value Cookie value.
+	 */
+	function setCookie(name, value) {
+		var secure = window.location.protocol === 'https:' ? '; Secure' : '';
+		document.cookie = name + '=' + encodeURIComponent(value) + '; path=/; SameSite=Lax; max-age=86400' + secure;
+	}
+
+	/**
 	 * Get the WooCommerce cart hash from the cookie, or generate a fallback.
 	 *
 	 * @return {string} Cart identifier.
@@ -627,6 +638,28 @@
 
 		// --- Checkout Started ---
 		if (pageType === 'checkout') {
+			// Store checkout path for server-side Order Completed attribution.
+			setCookie('apha_checkout_path', window.location.pathname);
+
+			// Generate a unique order group ID for this checkout session.
+			// Links the main order with any upsell orders in analytics.
+			// Only set if not already present (survives page refresh).
+			if (!getCookie('apha_order_group_id')) {
+				var groupId = typeof crypto !== 'undefined' && typeof crypto.randomUUID === 'function'
+					? crypto.randomUUID()
+					: Date.now().toString(36) + Math.random().toString(36).substring(2);
+				setCookie('apha_order_group_id', 'og_' + groupId);
+			}
+
+			// Store PostHog session ID so the server-side event links to this session.
+			if (window.posthog && typeof window.posthog.onSessionId === 'function') {
+				window.posthog.onSessionId(function (sessionId) {
+					if (sessionId) {
+						setCookie('apha_session_id', sessionId);
+					}
+				});
+			}
+
 			capture('Checkout Started', {
 				products: dataLayer.products || [],
 				total: dataLayer.total,

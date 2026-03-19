@@ -3,7 +3,7 @@
  * Plugin Name: InsightTrail for PostHog
  * Plugin URI:  https://github.com/hyroescom/insighttrail-for-posthog
  * Description: PostHog Analytics for WooCommerce — server-side event tracking, marketing attribution engine, identity stitching, and LTV enrichment.
- * Version: 1.4.0
+ * Version: 1.5.0
  * Author: AGStudio.ai
  * Author URI: https://agstudio.ai
  * Requires at least: 5.8
@@ -22,7 +22,7 @@ defined( 'ABSPATH' ) || exit;
 /**
  * Plugin version.
  */
-define( 'APHA_VERSION', '1.4.0' );
+define( 'APHA_VERSION', '1.5.0' );
 
 /**
  * Plugin file path.

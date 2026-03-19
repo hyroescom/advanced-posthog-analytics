@@ -124,11 +124,32 @@ class APHA_Server_Events {
 		// Identify first so the person merge resolves before the event is captured.
 		$this->identity->identify_from_order( $order );
 
-		// Use email as distinct_id when available so the event is attributed directly.
-		$email = $order->get_billing_email();
-		$distinct_id = ! empty( $email ) ? $email : $this->identity->get_distinct_id_for_order( $order );
+		// Use the stored browser distinct_id so the event links to the browser session.
+		// identify_from_order() above already merges anonymous/wp_XX identity with email.
+		$distinct_id = $this->identity->get_distinct_id_for_order( $order );
 
 		$properties = $this->product_data->get_order_properties( $order );
+
+		// For upsell orders (created by upsell plugins, bypassing persist_to_order),
+		// read the order group cookie and mark as "upsell".
+		if ( empty( $order->get_meta( '_apha_order_group_id' ) ) ) {
+			// phpcs:ignore WordPress.Security.NonceVerification.Recommended
+			$group_cookie = isset( $_COOKIE['apha_order_group_id'] )
+				? sanitize_text_field( wp_unslash( $_COOKIE['apha_order_group_id'] ) )
+				: '';
+			if ( ! empty( $group_cookie ) ) {
+				$order->update_meta_data( '_apha_order_group_id', $group_cookie );
+
+				/**
+				 * Filter the order type for upsell detection.
+				 *
+				 * @param string   $order_type Default order type.
+				 * @param WC_Order $order      The WooCommerce order.
+				 */
+				$order_type = apply_filters( 'apha_order_type', 'upsell', $order );
+				$order->update_meta_data( '_apha_order_type', sanitize_text_field( $order_type ) );
+			}
+		}
 
 		// Merge attribution data into event properties.
 		if ( $this->attribution ) {

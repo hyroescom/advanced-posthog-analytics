@@ -70,6 +70,23 @@ class APHA_Attribution {
 	);
 
 	/**
+	 * Identity manager instance (optional).
+	 *
+	 * @var APHA_Identity|null
+	 */
+	private $identity = null;
+
+	/**
+	 * Set the identity manager instance.
+	 *
+	 * @param APHA_Identity $identity Identity manager.
+	 * @return void
+	 */
+	public function set_identity( $identity ) {
+		$this->identity = $identity;
+	}
+
+	/**
 	 * Constructor.
 	 *
 	 * Hooks into WordPress init for cookie capture and WooCommerce checkout
@@ -186,6 +203,51 @@ class APHA_Attribution {
 			$this->fallback_wc_attribution( $order );
 		}
 
+		// Checkout path from JS cookie (set on checkout page load).
+		// phpcs:ignore WordPress.Security.NonceVerification.Recommended
+		$checkout_path = isset( $_COOKIE['apha_checkout_path'] )
+			? sanitize_text_field( wp_unslash( $_COOKIE['apha_checkout_path'] ) )
+			: '';
+
+		if ( ! empty( $checkout_path ) ) {
+			$order->update_meta_data( '_apha_checkout_path', $checkout_path );
+
+			/**
+			 * Filter the checkout type label derived from the checkout path.
+			 *
+			 * @param string   $checkout_type Default checkout type.
+			 * @param string   $checkout_path The checkout page URL path.
+			 * @param WC_Order $order         The WooCommerce order.
+			 */
+			$checkout_type = apply_filters( 'apha_checkout_type', 'standard', $checkout_path, $order );
+			$order->update_meta_data( '_apha_checkout_type', sanitize_text_field( $checkout_type ) );
+		}
+
+		// PostHog session ID: prefer server-side PostHog cookie parse, fall back to JS cookie.
+		$session_id = null;
+		if ( $this->identity ) {
+			$session_id = $this->identity->get_posthog_browser_session_id();
+		}
+		if ( empty( $session_id ) ) {
+			// phpcs:ignore WordPress.Security.NonceVerification.Recommended
+			$session_id = isset( $_COOKIE['apha_session_id'] )
+				? sanitize_text_field( wp_unslash( $_COOKIE['apha_session_id'] ) )
+				: '';
+		}
+		if ( ! empty( $session_id ) ) {
+			$order->update_meta_data( '_apha_session_id', $session_id );
+		}
+
+		// Order group ID: links main order with upsells from the same checkout session.
+		// phpcs:ignore WordPress.Security.NonceVerification.Recommended
+		$order_group_id = isset( $_COOKIE['apha_order_group_id'] )
+			? sanitize_text_field( wp_unslash( $_COOKIE['apha_order_group_id'] ) )
+			: '';
+		if ( ! empty( $order_group_id ) ) {
+			$order->update_meta_data( '_apha_order_group_id', $order_group_id );
+			$order->update_meta_data( '_apha_order_type', 'main' );
+		}
+
 		$order->save();
 	}
 
@@ -233,6 +295,34 @@ class APHA_Attribution {
 		$sessions = $order->get_meta( '_apha_session_count' );
 		if ( ! empty( $sessions ) ) {
 			$attribution['session_count'] = (int) $sessions;
+		}
+
+		// Checkout attribution.
+		$checkout_path = $order->get_meta( '_apha_checkout_path' );
+		if ( ! empty( $checkout_path ) ) {
+			$attribution['checkout_path'] = $checkout_path;
+		}
+
+		$checkout_type = $order->get_meta( '_apha_checkout_type' );
+		if ( ! empty( $checkout_type ) ) {
+			$attribution['checkout_type'] = $checkout_type;
+		}
+
+		// PostHog session ID — uses $ prefix so PostHog links the event to the session.
+		$session_id = $order->get_meta( '_apha_session_id' );
+		if ( ! empty( $session_id ) ) {
+			$attribution['$session_id'] = $session_id;
+		}
+
+		// Order grouping for upsell attribution.
+		$order_group_id = $order->get_meta( '_apha_order_group_id' );
+		if ( ! empty( $order_group_id ) ) {
+			$attribution['order_group_id'] = $order_group_id;
+		}
+
+		$order_type = $order->get_meta( '_apha_order_type' );
+		if ( ! empty( $order_type ) ) {
+			$attribution['order_type'] = $order_type;
 		}
 
 		return $attribution;
@@ -437,6 +527,11 @@ class APHA_Attribution {
 
 		$keys[] = '_apha_days_to_conversion';
 		$keys[] = '_apha_session_count';
+		$keys[] = '_apha_checkout_path';
+		$keys[] = '_apha_checkout_type';
+		$keys[] = '_apha_session_id';
+		$keys[] = '_apha_order_group_id';
+		$keys[] = '_apha_order_type';
 
 		return $keys;
 	}

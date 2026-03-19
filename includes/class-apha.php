@@ -118,6 +118,7 @@ class APHA {
 		// Initialize identity management.
 		$this->identity = new APHA_Identity( $this->api );
 		$this->identity->set_attribution( $this->attribution );
+		$this->attribution->set_identity( $this->identity );
 
 		// Initialize product data helper.
 		$this->product_data = new APHA_Product_Data();

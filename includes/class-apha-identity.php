@@ -119,16 +119,15 @@ class APHA_Identity {
 	}
 
 	/**
-	 * Read the PostHog JS SDK's distinct_id from its browser cookie.
+	 * Parse the PostHog JS SDK's browser cookie into an associative array.
 	 *
 	 * The JS SDK stores session state in a cookie named `ph_{api_key}_posthog`.
-	 * The value is JSON (possibly URL-encoded) containing `distinct_id`.
-	 * By reading this server-side, we can use the exact same identity for
-	 * server events, ensuring funnels and person profiles connect.
+	 * The value is JSON (possibly URL-encoded) containing `distinct_id`,
+	 * `$sesid` (session ID), and other session state.
 	 *
-	 * @return string|null The browser distinct_id or null if unavailable.
+	 * @return array|null Parsed cookie data or null if unavailable.
 	 */
-	private function get_posthog_browser_distinct_id() {
+	private function get_posthog_cookie_data() {
 		$api_key = APHA_Settings::get_api_key();
 
 		if ( empty( $api_key ) ) {
@@ -150,8 +149,43 @@ class APHA_Identity {
 
 		$data = json_decode( $raw, true );
 
+		return is_array( $data ) ? $data : null;
+	}
+
+	/**
+	 * Read the PostHog JS SDK's distinct_id from its browser cookie.
+	 *
+	 * By reading this server-side, we can use the exact same identity for
+	 * server events, ensuring funnels and person profiles connect.
+	 *
+	 * @return string|null The browser distinct_id or null if unavailable.
+	 */
+	private function get_posthog_browser_distinct_id() {
+		$data = $this->get_posthog_cookie_data();
+
 		if ( is_array( $data ) && ! empty( $data['distinct_id'] ) ) {
 			return sanitize_text_field( $data['distinct_id'] );
+		}
+
+		return null;
+	}
+
+	/**
+	 * Read the PostHog JS SDK's session ID from its browser cookie.
+	 *
+	 * The session ID is stored in the `$sesid` field as an array where
+	 * the second element is the session ID string.
+	 *
+	 * @return string|null The browser session ID or null if unavailable.
+	 */
+	public function get_posthog_browser_session_id() {
+		$data = $this->get_posthog_cookie_data();
+
+		if ( is_array( $data ) && ! empty( $data['$sesid'] ) && is_array( $data['$sesid'] ) ) {
+			// $sesid is [timestamp, sessionId, windowId].
+			if ( ! empty( $data['$sesid'][1] ) ) {
+				return sanitize_text_field( $data['$sesid'][1] );
+			}
 		}
 
 		return null;

@@ -66,6 +66,13 @@ $apha_meta_keys = array(
 	// Conversion metrics.
 	'_apha_days_to_conversion',
 	'_apha_session_count',
+	// Checkout attribution.
+	'_apha_checkout_path',
+	'_apha_checkout_type',
+	'_apha_session_id',
+	// Order grouping.
+	'_apha_order_group_id',
+	'_apha_order_type',
 );
 
 // Build placeholders for the IN clause.
